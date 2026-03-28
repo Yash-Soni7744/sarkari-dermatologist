@@ -15,8 +15,20 @@ const firebaseConfig = {
 
 // Initialize Firebase for SSR compatibility
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+
+// Lazy initializers to prevent build-time crashes
+let auth: any;
+let db: any;
+let storage: any;
+
+if (typeof window !== "undefined" || firebaseConfig.apiKey) {
+  try {
+    auth = getAuth(app);
+    db = getFirestore(app);
+    storage = getStorage(app);
+  } catch (e) {
+    console.warn("Firebase initialization skipped during build scan.");
+  }
+}
 
 export { auth, db, storage };

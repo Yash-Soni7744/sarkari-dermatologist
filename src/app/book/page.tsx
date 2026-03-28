@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+export const dynamic = 'force-dynamic';
+
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { BookingProvider, useBooking, PatientType } from '@/context/BookingContext';
@@ -573,7 +575,13 @@ function BookingContent() {
 export default function BookPage() {
     return (
         <BookingProvider>
-            <BookingContent />
+            <Suspense fallback={
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
+                    <Loader2 size={48} className="spinner" />
+                </div>
+            }>
+                <BookingContent />
+            </Suspense>
         </BookingProvider>
     );
 }
