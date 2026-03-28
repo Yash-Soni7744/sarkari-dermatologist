@@ -1,0 +1,93 @@
+:root {
+  /* Brand Colors */
+  --primary: #0d9488;
+  --primary-dark: #0f766e;
+  /* Teal 700 */
+  /* Teal 600 */
+  --primary-foreground: #ffffff;
+  --secondary: #e0f2fe;
+  /* Sky 100 */
+  --secondary-foreground: #0f172a;
+  /* Slate 900 */
+  --accent: #1e293b;
+  /* Slate 800 */
+  --accent-foreground: #f8fafc;
+  /* Slate 50 */
+
+  /* UI Colors */
+  --background: #ffffff;
+  --foreground: #0f172a;
+  /* Slate 900 */
+  --muted: #f1f5f9;
+  /* Slate 100 */
+  --muted-foreground: #64748b;
+  /* Slate 500 */
+  --border: #e2e8f0;
+  /* Slate 200 */
+  --input: #e2e8f0;
+  --ring: #0d9488;
+
+  /* Status Colors */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  /* Layout */
+  --radius: 0.5rem;
+  --container-width: 1200px;
+  --header-height: 4rem;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-lato), sans-serif;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--accent);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Utility to visually hide elements but keep them accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

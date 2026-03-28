@@ -1,0 +1,147 @@
+.section {
+    padding: 5rem 0;
+}
+
+.hero {
+    background-color: var(--secondary);
+    padding: 6rem 0;
+}
+
+.heroContent {
+    display: flex;
+    gap: 4rem;
+    align-items: center;
+}
+
+.heroImage {
+    flex: 1;
+    max-width: 400px;
+    aspect-ratio: 3/4;
+    background-color: var(--muted);
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.heroImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.heroText {
+    flex: 1.5;
+}
+
+.name {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.credentials {
+    font-size: 1.25rem;
+    color: var(--primary);
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.tagline {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--foreground);
+    margin-bottom: 2.5rem;
+    border-left: 4px solid var(--primary);
+    padding-left: 1.5rem;
+}
+
+.bio {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--muted-foreground);
+}
+
+.bio p {
+    margin-bottom: 1.5rem;
+}
+
+.bio p:last-child {
+    margin-bottom: 0;
+}
+
+.stats {
+    display: flex;
+    gap: 3rem;
+    margin-top: 3rem;
+}
+
+.statItem h3 {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.statItem p {
+    color: var(--muted-foreground);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.timeline {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.timelineItem {
+    border-left: 2px solid var(--border);
+    padding-left: 2rem;
+    padding-bottom: 3rem;
+    position: relative;
+}
+
+.timelineItem:last-child {
+    border-left: none;
+}
+
+.timelineItem::before {
+    content: "";
+    position: absolute;
+    left: -9px;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--primary);
+    border: 4px solid white;
+    box-shadow: 0 0 0 1px var(--border);
+}
+
+.year {
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .heroContent {
+        flex-direction: column;
+    }
+}

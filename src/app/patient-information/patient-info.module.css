@@ -1,0 +1,180 @@
+.hero {
+    background: linear-gradient(to bottom right, var(--secondary), white);
+    padding: 6rem 0 4rem;
+    text-align: center;
+}
+
+.heroTitle {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--accent);
+}
+
+.heroSubtitle {
+    font-size: 1.25rem;
+    color: var(--muted-foreground);
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.section {
+    padding: 5rem 0;
+}
+
+.sectionTitle {
+    text-align: center;
+    font-size: 2.25rem;
+    margin-bottom: 3rem;
+    color: var(--accent);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2.5rem;
+}
+
+.card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.iconWrapper {
+    width: 60px;
+    height: 60px;
+    background-color: var(--secondary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+}
+
+.card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--accent);
+}
+
+.card p {
+    color: var(--muted-foreground);
+    line-height: 1.6;
+}
+
+.card ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+.card li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--foreground);
+}
+
+.card li::before {
+    content: "•";
+    color: var(--primary);
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+.ctaSection {
+    background-color: var(--primary);
+    color: white;
+    text-align: center;
+    padding: 4rem 0;
+}
+
+.ctaTitle {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.ctaSubtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ctaBtn {
+    background-color: white;
+    color: var(--primary);
+    padding: 1rem 2.5rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.ctaBtn:hover {
+    background-color: var(--secondary);
+}
+
+.accordion {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.accordionItem {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.accordionHeader {
+    width: 100%;
+    padding: 1.5rem;
+    background: white;
+    border: none;
+    text-align: left;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.accordionHeader:hover {
+    background-color: var(--muted);
+}
+
+.accordionContent {
+    padding: 1.5rem;
+    background: white;
+    border-top: 1px solid var(--border);
+    color: var(--muted-foreground);
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .heroTitle {
+        font-size: 2.25rem;
+    }
+}

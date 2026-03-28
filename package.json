@@ -1,0 +1,26 @@
+{
+  "name": "sarkari-dermatologist-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@cashfreepayments/cashfree-js": "^1.0.7",
+    "firebase": "^12.11.0",
+    "lucide-react": "^0.364.0",
+    "next": "14.1.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "resend": "^6.9.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.2.73",
+    "@types/react-dom": "^18.2.23",
+    "typescript": "^5.4.3"
+  }
+}
