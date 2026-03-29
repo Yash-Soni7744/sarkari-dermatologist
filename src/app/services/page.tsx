@@ -1,4 +1,7 @@
+"use client";
+
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import { 
     Stethoscope, 
     Sparkles, 
@@ -14,6 +17,7 @@ import {
 import styles from './services.module.css';
 
 export default function ServicesPage() {
+    const { user } = useAuth();
     const services = [
         {
             title: "Acne & Acne Scars",
@@ -111,7 +115,9 @@ export default function ServicesPage() {
                                         <li key={iIdx}>{item}</li>
                                     ))}
                                 </ul>
-                                <Link href="/book" className={styles.bookBtn}>Book Consultation</Link>
+                                {user?.role !== 'doctor' && (
+                                    <Link href="/book" className={styles.bookBtn}>Book Consultation</Link>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -140,17 +146,19 @@ export default function ServicesPage() {
                                 </div>
                             ))}
                         </div>
-                        <Link href="/book" style={{
-                            backgroundColor: 'var(--primary)',
-                            color: 'white',
-                            padding: '1rem 3rem',
-                            borderRadius: 'var(--radius)',
-                            fontWeight: 600,
-                            display: 'inline-block',
-                            transition: 'opacity 0.2s'
-                        }}>
-                            Request Second Opinion
-                        </Link>
+                        {user?.role !== 'doctor' && (
+                            <Link href="/book" style={{
+                                backgroundColor: 'var(--primary)',
+                                color: 'white',
+                                padding: '1rem 3rem',
+                                borderRadius: 'var(--radius)',
+                                fontWeight: 600,
+                                display: 'inline-block',
+                                transition: 'opacity 0.2s'
+                            }}>
+                                Request Second Opinion
+                            </Link>
+                        )}
                     </div>
                 </section>
             </div>

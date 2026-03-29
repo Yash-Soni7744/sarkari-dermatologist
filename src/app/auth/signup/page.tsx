@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { User, Mail, Phone, Lock, Calendar, Droplets, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { getFriendlyErrorMessage } from '@/lib/utils';
 import styles from './signup.module.css';
 
 export default function SignupPage() {
@@ -42,8 +43,9 @@ export default function SignupPage() {
                 bloodGroup: formData.bloodGroup
             });
         } catch (err: any) {
-
-            setError(err.message || 'Failed to create account');
+            const firebaseErrorCode = err.code || '';
+            const friendlyMsg = getFriendlyErrorMessage(firebaseErrorCode);
+            setError(friendlyMsg);
         } finally {
             setIsLoading(false);
         }

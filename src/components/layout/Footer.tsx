@@ -1,8 +1,12 @@
+"use client";
+
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import { Mail, Phone, MapPin, Instagram, Facebook, Twitter, Linkedin } from 'lucide-react';
 import styles from './Footer.module.css';
 
 export default function Footer() {
+    const { user } = useAuth();
     return (
         <footer className={styles.footer}>
             <div className={`container ${styles.footerContainer}`}>
@@ -29,7 +33,9 @@ export default function Footer() {
                             <li><Link href="/">Home</Link></li>
                             <li><Link href="/about">About</Link></li>
                             <li><Link href="/services">Services</Link></li>
-                            <li><Link href="/book">Book Appointment</Link></li>
+                            {user?.role !== 'doctor' && (
+                                <li><Link href="/book">Book Appointment</Link></li>
+                            )}
                             <li><Link href="/patient-portal">Patient Portal</Link></li>
                         </ul>
                     </div>

@@ -13,22 +13,25 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase for SSR compatibility
+// Initialize Firebase
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-// Lazy initializers to prevent build-time crashes
-let auth: any;
-let db: any;
-let storage: any;
+// Export initialized services with safety check
+let auth: any = null;
+let db: any = null;
+let storage: any = null;
 
-if (typeof window !== "undefined" || firebaseConfig.apiKey) {
-  try {
-    auth = getAuth(app);
-    db = getFirestore(app);
-    storage = getStorage(app);
-  } catch (e) {
-    console.warn("Firebase initialization skipped during build scan.");
-  }
+if (firebaseConfig.apiKey) {
+    try {
+        auth = getAuth(app);
+        db = getFirestore(app);
+        storage = getStorage(app);
+    } catch (e) {
+        console.error("Firebase services failed to initialize:", e);
+    }
+} else {
+    // This warning helps you know why features aren't working
+    console.warn("Firebase: NEXT_PUBLIC_FIREBASE_API_KEY is missing. Auth and Database will be disabled.");
 }
 
 export { auth, db, storage };

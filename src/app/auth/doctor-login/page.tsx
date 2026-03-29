@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Mail, Lock, Loader2, Stethoscope } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { getFriendlyErrorMessage } from '@/lib/utils';
 import styles from '../login/login.module.css';
 
 export default function DoctorLoginPage() {
@@ -31,7 +32,9 @@ export default function DoctorLoginPage() {
         try {
             await login(formData.email, formData.password);
         } catch (err: any) {
-            setError('Account not found or password incorrect.');
+            const firebaseErrorCode = err.code || '';
+            const friendlyMsg = getFriendlyErrorMessage(firebaseErrorCode);
+            setError(friendlyMsg);
         } finally {
             setIsLoading(false);
         }

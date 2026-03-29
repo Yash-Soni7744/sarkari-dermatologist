@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 import {
   CalendarCheck,
   Video,
@@ -11,6 +14,7 @@ import {
 import styles from "./home.module.css";
 
 export default function Home() {
+  const { user } = useAuth();
   return (
     <>
       {/* Hero Section */}
@@ -25,9 +29,15 @@ export default function Home() {
               Consult India's leading dermatologist online. FDA-approved treatments for acne, hair loss, and skin conditions. Accessible for patients globally.
             </p>
             <div className={styles.heroButtons}>
-              <Link href="/book" className={styles.primaryBtn}>
-                Book Appointment <ArrowRight size={20} style={{ marginLeft: "0.5rem" }} />
-              </Link>
+              {user?.role === 'doctor' ? (
+                <Link href="/doctor/dashboard" className={styles.primaryBtn}>
+                  Go to Dashboard <ArrowRight size={20} style={{ marginLeft: "0.5rem" }} />
+                </Link>
+              ) : (
+                <Link href="/book" className={styles.primaryBtn}>
+                  Book Appointment <ArrowRight size={20} style={{ marginLeft: "0.5rem" }} />
+                </Link>
+              )}
               <Link href="/services" className={styles.secondaryBtn}>
                 View Services
               </Link>
@@ -140,9 +150,15 @@ export default function Home() {
           <p style={{ maxWidth: '600px', margin: '0 auto' }}>
             Book your consultation today and take the first step towards healthy skin.
           </p>
-          <Link href="/book" className={styles.ctaBtnInverse}>
-            Book Appointment Now
-          </Link>
+          {user?.role === 'doctor' ? (
+            <Link href="/doctor/dashboard" className={styles.ctaBtnInverse}>
+              Go to Dashboard
+            </Link>
+          ) : (
+            <Link href="/book" className={styles.ctaBtnInverse}>
+              Book Appointment Now
+            </Link>
+          )}
         </div>
       </section>
     </>

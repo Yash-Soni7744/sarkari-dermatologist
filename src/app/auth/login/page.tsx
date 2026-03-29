@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Lock, Loader2, Stethoscope } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { getFriendlyErrorMessage } from '@/lib/utils';
 import styles from './login.module.css';
 
 export default function LoginPage() {
@@ -29,8 +30,9 @@ export default function LoginPage() {
         try {
             await login(formData.email, formData.password);
         } catch (err: any) {
-
-            setError(err.message || 'Login failed. Please check your credentials.');
+            const firebaseErrorCode = err.code || '';
+            const friendlyMsg = getFriendlyErrorMessage(firebaseErrorCode);
+            setError(friendlyMsg);
         } finally {
             setIsLoading(false);
         }

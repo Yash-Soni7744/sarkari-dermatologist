@@ -4,6 +4,11 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { orderId, orderAmount, orderCurrency, customerDetails } = body;
+    
+    if (!process.env.NEXT_PUBLIC_CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
+      console.error('Cashfree configuration missing');
+      return NextResponse.json({ error: 'Payment gateway not configured correctly' }, { status: 401 });
+    }
 
     const url = process.env.NEXT_PUBLIC_CASHFREE_ENV === 'TEST' 
       ? 'https://sandbox.cashfree.com/pg/orders' 

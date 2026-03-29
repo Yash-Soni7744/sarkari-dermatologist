@@ -29,7 +29,9 @@ export default function Header() {
             <li><Link href="/about" onClick={() => setIsMenuOpen(false)}>About</Link></li>
             <li><Link href="/services" onClick={() => setIsMenuOpen(false)}>Services</Link></li>
             <li><Link href="/patient-information" onClick={() => setIsMenuOpen(false)}>Patient Information</Link></li>
-            <li><Link href="/book" onClick={() => setIsMenuOpen(false)}>Book Appointment</Link></li>
+            {user?.role !== 'doctor' && (
+              <li><Link href="/book" onClick={() => setIsMenuOpen(false)}>Book Appointment</Link></li>
+            )}
             {/* Chat disabled per user request */}
             {user && (
               <li className={styles.disabledLink}>

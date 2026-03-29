@@ -22,9 +22,8 @@ import {
   ExternalLink,
   Copy
 } from 'lucide-react';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import styles from './book.module.css';
 
 // --- Sub-components (Steps) ---
@@ -212,25 +211,57 @@ const PatientDetails = () => {
 
         setUploading(true);
         try {
-            const uploadPromises = files.map(async (file) => {
-                const storageRef = ref(storage, `medical_photos/${user?.id || 'anonymous'}/${Date.now()}_${file.name}`);
-                const snapshot = await uploadBytes(storageRef, file);
-                const url = await getDownloadURL(snapshot.ref);
-                return { url, name: file.name };
-            });
+            const compressImage = (file: File): Promise<{url: string, name: string}> => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.src = event.target?.result as string;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 1000;
+                            const MAX_HEIGHT = 1000;
+                            let width = img.width;
+                            let height = img.height;
 
-            const uploadedPhotos = await Promise.all(uploadPromises);
+                            if (width > height) {
+                                if (width > MAX_WIDTH) {
+                                    height *= MAX_WIDTH / width;
+                                    width = MAX_WIDTH;
+                                }
+                            } else {
+                                if (height > MAX_HEIGHT) {
+                                    width *= MAX_HEIGHT / height;
+                                    height = MAX_HEIGHT;
+                                }
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx?.drawImage(img, 0, 0, width, height);
+                            
+                            // Compress as JPEG with 0.6 quality
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                            resolve({ url: dataUrl, name: file.name });
+                        };
+                    };
+                });
+            };
+
+            const compressedPhotos = await Promise.all(files.map(compressImage));
             
             updateBooking({
                 details: {
                     ...booking.details,
-                    photos: [...booking.details.photos, ...uploadedPhotos]
+                    photos: [...booking.details.photos, ...compressedPhotos]
                 }
             });
-            alert('Photos uploaded in original high resolution!');
+            alert('Photos compressed and added!');
         } catch (error: any) {
             console.error('Upload Error:', error);
-            alert(`Failed: ${error.message}. Ensure you have enabled Storage Rules!`);
+            alert(`Failed: ${error.message}`);
         } finally {
             setUploading(false);
         }
@@ -323,19 +354,28 @@ const PaymentStep = () => {
     const [isPaying, setIsPaying] = useState(false);
     const { user } = useAuth();
 
-    const generateMeetId = () => {
-        const letters = "abcdefghijklmnopqrstuvwxyz";
-        const part = (len: number) => Array.from({length: len}, () => letters[Math.floor(Math.random() * letters.length)]).join('');
-        return `meet.google.com/${part(3)}-${part(4)}-${part(3)}`;
-    };
-
     const handlePayment = async () => {
         if (!user) return;
         setIsPaying(true);
         try {
-            const meetLink = generateMeetId();
+            // 1. Generate a REAL Google Meet link via our new API
+            const meetRes = await fetch('/api/meetings/create-meeting', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    date: booking.date,
+                    slot: booking.slot,
+                    patientEmail: booking.details.email,
+                    patientName: booking.details.name
+                })
+            });
 
-            // 1. Create Pending Appointment in Firestore
+            const meetData = await meetRes.json();
+            if (!meetRes.ok) throw new Error(meetData.error || 'Failed to create Google Meet');
+            
+            const meetLink = meetData.meetLink;
+
+            // 2. Create Pending Appointment in Firestore
             const aptRef = await addDoc(collection(db, "appointments"), {
                 patientId: user.id,
                 patientName: booking.details.name,
@@ -372,7 +412,8 @@ const PaymentStep = () => {
 
             // 3. Open Cashfree Checkout
             const { load } = await import('@cashfreepayments/cashfree-js');
-            const cashfree = await load({ mode: 'sandbox' });
+            const mode = process.env.NEXT_PUBLIC_CASHFREE_ENV === 'PRODUCTION' ? 'production' : 'sandbox';
+            const cashfree = await load({ mode });
             
             await cashfree.checkout({
                 paymentSessionId: data.payment_session_id,
@@ -466,11 +507,13 @@ function BookingContent() {
     const { user, loading } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const [isVerifying, setIsVerifying] = useState(false);
 
     // Handle Cashfree Callback & State Recovery
     useEffect(() => {
         const orderId = searchParams.get('order_id');
         if (orderId && booking.step !== 4) {
+            setIsVerifying(true);
             const verifyAndRecover = async () => {
                 try {
                     // 1. Fetch data from Firestore to recover state
@@ -525,6 +568,8 @@ function BookingContent() {
                     }
                 } catch (err) {
                     console.error("Verification failed:", err);
+                } finally {
+                    setIsVerifying(false);
                 }
             };
             verifyAndRecover();
@@ -538,11 +583,11 @@ function BookingContent() {
         }
     }, [user, loading, router]);
 
-    if (loading || !user) {
+    if (loading || !user || isVerifying) {
         return (
             <div className={styles.loadingContainer}>
                 <Loader2 size={48} className="spinner" />
-                <p>Checking authentication...</p>
+                <p>{isVerifying ? "Verifying your payment and finalizing booking..." : "Checking authentication..."}</p>
             </div>
         );
     }
