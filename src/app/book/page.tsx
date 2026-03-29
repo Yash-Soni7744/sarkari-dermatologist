@@ -242,7 +242,7 @@ const PatientDetails = () => {
                             const ctx = canvas.getContext('2d');
                             ctx?.drawImage(img, 0, 0, width, height);
                             
-                            // Compress as JPEG with 0.6 quality
+                            // Compress as JPEG with 0.6 quality for small footprint
                             const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
                             resolve({ url: dataUrl, name: file.name });
                         };
@@ -252,19 +252,38 @@ const PatientDetails = () => {
 
             const compressedPhotos = await Promise.all(files.map(compressImage));
             
+            // Safety check: Total size of all photos in Base64
+            const totalSize = [...booking.details.photos, ...compressedPhotos].reduce((acc, p) => acc + p.url.length, 0);
+            const MAX_FIRESTORE_PAYLOAD = 800000; // ~800KB safety limit (Firestore limit is 1MB total)
+
+            if (totalSize > MAX_FIRESTORE_PAYLOAD) {
+                alert('Total image size too large. Please upload fewer or smaller images.');
+                return;
+            }
+
             updateBooking({
                 details: {
                     ...booking.details,
                     photos: [...booking.details.photos, ...compressedPhotos]
                 }
             });
-            alert('Photos compressed and added!');
+            // alert('Photos compressed and added!');
         } catch (error: any) {
             console.error('Upload Error:', error);
             alert(`Failed: ${error.message}`);
         } finally {
             setUploading(false);
+            if (e.target) e.target.value = ''; // Reset input
         }
+    };
+
+    const clearPhotos = () => {
+        updateBooking({
+            details: {
+                ...booking.details,
+                photos: []
+            }
+        });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -314,24 +333,38 @@ const PatientDetails = () => {
                 </div>
 
                 <div className={styles.fileUpload}>
-                    <label className={styles.uploadBox} style={{ cursor: 'pointer' }}>
-                        <input 
-                            type="file" 
-                            hidden 
-                            multiple
-                            accept="image/*" 
-                            onChange={handleFileUpload}
-                            disabled={uploading}
-                        />
-                        {uploading ? <Loader2 size={24} className="spinner" /> : <Upload size={24} />}
-                        <p>{booking.details.photos.length > 0 ? `${booking.details.photos.length} Photo(s) Added!` : 'Click to select multiple photos of affected area'}</p>
-                        <span>JPG, PNG up to 1MB total</span>
-                    </label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <label className={styles.uploadBox} style={{ cursor: 'pointer', flex: 1, marginRight: booking.details.photos.length > 0 ? '10px' : '0' }}>
+                            <input 
+                                type="file" 
+                                hidden 
+                                multiple
+                                accept="image/*" 
+                                onChange={handleFileUpload}
+                                disabled={uploading}
+                            />
+                            {uploading ? <Loader2 size={24} className="spinner" /> : <Upload size={24} />}
+                            <p>{booking.details.photos.length > 0 ? `${booking.details.photos.length} Photo(s) Added!` : 'Click to select multiple photos of affected area'}</p>
+                            <span>JPG, PNG (Auto-compressed)</span>
+                        </label>
+                        {booking.details.photos.length > 0 && (
+                            <button 
+                                type="button" 
+                                onClick={clearPhotos}
+                                className={styles.clearBtn}
+                                style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #ef4444', color: '#ef4444', background: 'white', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                                Clear All
+                            </button>
+                        )}
+                    </div>
                     <div className={styles.photoContainer}>
                         {booking.details.photos.map((p, idx) => (
                             <div key={idx} className={styles.photoTag}>
-                                <Upload size={14} />
-                                <span>{p.name}</span>
+                                <div style={{ width: '30px', height: '30px', overflow: 'hidden', borderRadius: '4px', background: '#eee' }}>
+                                    <img src={p.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Thumb" />
+                                </div>
+                                <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
                             </div>
                         ))}
                     </div>
