@@ -20,7 +20,8 @@ import {
   Globe,
   IndianRupee,
   ExternalLink,
-  Copy
+  Copy,
+  X
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -392,22 +393,29 @@ const PaymentStep = () => {
         setIsPaying(true);
         try {
             // 1. Generate a REAL Google Meet link via our new API
-            const meetRes = await fetch('/api/meetings/create-meeting', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    date: booking.date,
-                    slot: booking.slot,
-                    patientEmail: booking.details.email,
-                    patientName: booking.details.name
-                })
-            });
+            let meetLink = 'https://meet.google.com/pzl-fjpa-oxe'; // Default/Fallback link
+            try {
+                const meetRes = await fetch('/api/meetings/create-meeting', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        date: booking.date,
+                        slot: booking.slot,
+                        patientEmail: booking.details.email,
+                        patientName: booking.details.name
+                    })
+                });
 
-            const meetData = await meetRes.json();
-            if (!meetRes.ok) throw new Error(meetData.error || 'Failed to create Google Meet');
+                const meetData = await meetRes.json();
+                if (meetRes.ok && meetData.meetLink) {
+                    meetLink = meetData.meetLink;
+                } else {
+                    console.warn('Meeting API failed, using fallback link:', meetData.error);
+                }
+            } catch (meetErr) {
+                console.warn('Could not create meet link, using fallback:', meetErr);
+            }
             
-            const meetLink = meetData.meetLink;
-
             // 2. Create Pending Appointment in Firestore
             const aptRef = await addDoc(collection(db, "appointments"), {
                 patientId: user.id,
@@ -541,44 +549,56 @@ function BookingContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isVerifying, setIsVerifying] = useState(false);
+    const [verificationError, setVerificationError] = useState<string | null>(null);
 
     // Handle Cashfree Callback & State Recovery
     useEffect(() => {
         const orderId = searchParams.get('order_id');
         if (orderId && booking.step !== 4) {
             setIsVerifying(true);
+            setVerificationError(null);
+
             const verifyAndRecover = async () => {
                 try {
-                    // 1. Fetch data from Firestore to recover state
+                    // 1. Verify Payment status with our backend first!
+                    const verifyRes = await fetch(`/api/payments/verify?orderId=${orderId}`);
+                    const verifyData = await verifyRes.json();
+
+                    if (!verifyRes.ok || verifyData.order_status !== 'PAID') {
+                        setVerificationError("Payment was not successful. Please try again.");
+                        return; // Stop here if not paid
+                    }
+
+                    // 2. Fetch data from Firestore to recover state
                     const aptRef = doc(db, "appointments", orderId);
                     const aptSnap = await getDoc(aptRef);
                     
                     if (aptSnap.exists()) {
                         const data = aptSnap.data();
                         
-                        // 2. Update status if needed
+                        // 3. Update status if needed
                         if (data.status === 'pending') {
                             await updateDoc(aptRef, { status: 'confirmed' });
+    
+                            // 4. Send Confirmation Email via Resend
+                            try {
+                                await fetch('/api/emails/send-confirmation', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        name: data.patientName,
+                                        email: data.patientEmail,
+                                        date: data.date,
+                                        slot: data.slot,
+                                        meetLink: data.meetLink
+                                    })
+                                });
+                            } catch (emailErr) {
+                                console.error("Failed to send email:", emailErr);
+                            }
                         }
                         
-                        // 3. Send Confirmation Email via Resend
-                        try {
-                            await fetch('/api/emails/send-confirmation', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    name: data.patientName,
-                                    email: data.patientEmail,
-                                    date: data.date,
-                                    slot: data.slot,
-                                    meetLink: data.meetLink
-                                })
-                            });
-                        } catch (emailErr) {
-                            console.error("Failed to send email:", emailErr);
-                        }
-
-                        // 4. Populate Booking State
+                        // 5. Populate Booking State and move to Success
                         let restoredPhotos = [];
                         try {
                             restoredPhotos = typeof data.photos === 'string' ? JSON.parse(data.photos) : (data.photos || []);
@@ -601,6 +621,7 @@ function BookingContent() {
                     }
                 } catch (err) {
                     console.error("Verification failed:", err);
+                    setVerificationError("Something went wrong while verifying your payment.");
                 } finally {
                     setIsVerifying(false);
                 }
@@ -621,6 +642,29 @@ function BookingContent() {
             <div className={styles.loadingContainer}>
                 <Loader2 size={48} className="spinner" />
                 <p>{isVerifying ? "Verifying your payment and finalizing booking..." : "Checking authentication..."}</p>
+            </div>
+        );
+    }
+
+    if (verificationError) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.card} style={{ textAlign: 'center', borderColor: '#ef4444' }}>
+                    <div style={{ color: '#ef4444', marginBottom: '1rem' }}>
+                        <X size={48} style={{ margin: '0 auto' }} />
+                    </div>
+                    <h2 style={{ color: '#ef4444' }}>Payment Failed</h2>
+                    <p style={{ marginBottom: '1.5rem' }}>{verificationError}</p>
+                    <button 
+                        onClick={() => {
+                            setVerificationError(null);
+                            updateBooking({ step: 3 });
+                        }} 
+                        className={styles.continueBtn}
+                    >
+                        Try Again
+                    </button>
+                </div>
             </div>
         );
     }
