@@ -544,7 +544,7 @@ const SuccessStep = () => {
 // --- Main Page Component ---
 
 function BookingContent() {
-    const { booking, updateBooking } = useBooking();
+    const { booking, updateBooking, resetBooking } = useBooking();
     const { user, loading } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -658,11 +658,12 @@ function BookingContent() {
                     <button 
                         onClick={() => {
                             setVerificationError(null);
-                            updateBooking({ step: 3 });
+                            resetBooking();
+                            router.replace('/book');
                         }} 
                         className={styles.continueBtn}
                     >
-                        Try Again
+                        Book Again
                     </button>
                 </div>
             </div>
