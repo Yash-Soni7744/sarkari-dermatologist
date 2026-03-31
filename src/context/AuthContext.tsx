@@ -57,7 +57,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (docSnap.exists()) {
           const userData = docSnap.data() as User;
           
-          // Ensure professional name for the doctor role
           if (userData.role === 'doctor') {
             userData.name = 'Dr. Reetika Pal';
           }
@@ -66,17 +65,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ...userData,
             id: firebaseUser.uid,
           });
+          // Remove potential stale doctor session
+          localStorage.removeItem('doctor_session');
         } else {
-          // Fallback if firestore doc doesn't exist yet
           setUser({
             id: firebaseUser.uid,
             email: firebaseUser.email || '',
             name: firebaseUser.displayName || 'User',
-            role: 'patient', // Default role
+            role: 'patient',
           });
         }
       } else {
-        setUser(null);
+        // Check for hardcoded doctor session in localStorage
+        const storedDoctor = localStorage.getItem('doctor_session');
+        if (storedDoctor) {
+          try {
+            setUser(JSON.parse(storedDoctor));
+          } catch (e) {
+            localStorage.removeItem('doctor_session');
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
       }
       setLoading(false);
     });
@@ -96,6 +107,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: 'doctor',
           avatar: 'https://ui-avatars.com/api/?name=Dr+Reetika+Pal&background=0d9488&color=fff'
         };
+        // Persist doctor session
+        localStorage.setItem('doctor_session', JSON.stringify(doctorUser));
         setUser(doctorUser);
         router.push('/doctor/dashboard');
         return;
@@ -154,6 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      localStorage.removeItem('doctor_session');
       await signOut(auth);
       setUser(null);
       router.push('/');

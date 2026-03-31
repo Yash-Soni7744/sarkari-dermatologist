@@ -384,6 +384,25 @@
     color: var(--muted-foreground);
 }
 
+.noSlotsMessage {
+    text-align: center;
+    padding: 30px;
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px dashed rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    color: #ef4444;
+    font-weight: 500;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 80px 15px 40px;

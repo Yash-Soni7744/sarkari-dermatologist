@@ -22,9 +22,12 @@ import {
   Clock,
   Loader2,
   Stethoscope,
-  ClipboardList
+  ClipboardList,
+  MessageCircle
 } from 'lucide-react';
+import ChatWindow from '@/components/Chat/ChatWindow';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import styles from './profile.module.css';
 
 interface Appointment {
@@ -55,6 +58,7 @@ export default function ProfilePage() {
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
   const [isFetchingPrescriptions, setIsFetchingPrescriptions] = useState(true);
   const [selectedPrescription, setSelectedPrescription] = useState<any | null>(null);
+  const [activeChat, setActiveChat] = useState<Appointment | null>(null);
 
   // Initialize form when modal opens
   useEffect(() => {
@@ -90,11 +94,6 @@ export default function ProfilePage() {
     }
   };
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth/login?redirect=/profile');
-    }
-  }, [user, loading, router]);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -196,7 +195,8 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className={styles.container}>
+    <ProtectedRoute allowedRole="patient">
+      <div className={styles.container}>
       {/* Profile Header */}
       <div className={styles.profileHeader}>
         <div className={styles.profileInfo}>
@@ -219,8 +219,19 @@ export default function ProfilePage() {
           </div>
         </div>
         <div className={styles.headerActions}>
-          <button className={`${styles.primaryBtn} ${styles.disabledBtn}`} disabled>
-            <Zap size={18} /> Open Chat
+          <button 
+            className={styles.primaryBtn} 
+            onClick={() => {
+              if (upcomingApts.length > 0) {
+                setActiveChat(upcomingApts[0]);
+              } else if (appointments.length > 0) {
+                setActiveChat(appointments[0]);
+              } else {
+                alert("You need at least one appointment to start a chat with Dr. Reetika.");
+              }
+            }}
+          >
+            <MessageCircle size={18} /> Open Chat
           </button>
           <button className={styles.secondaryBtn} onClick={() => setIsEditModalOpen(true)}>
             <Edit3 size={18} /> Edit Profile
@@ -559,6 +570,19 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-    </div>
+      {/* Chat Window Overlay */}
+      {activeChat && (
+        <ChatWindow 
+          chatId={user.id}
+          currentUserId={user.id}
+          currentUserName={user.name}
+          otherPartyName="Dr. Reetika Pal"
+          meetLink={activeChat.meetLink}
+          onClose={() => setActiveChat(null)}
+          isDoctor={false}
+        />
+      )}
+      </div>
+    </ProtectedRoute>
   );
 }

@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import styles from './book.module.css';
 
 // --- Sub-components (Steps) ---
@@ -65,12 +65,37 @@ const SlotSelection = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const standardSlots = ['10:00 AM', '12:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
+
     const formatDateString = (year: number, month: number, day: number) => {
         return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     };
 
-    const standardSlots = ['10:00 AM', '12:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
-    
+    const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+    const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+
+    useEffect(() => {
+        const fetchBookedSlots = async () => {
+            if (!booking.date) return;
+            setIsLoadingSlots(true);
+            try {
+                const q = query(
+                    collection(db, "appointments"),
+                    where("date", "==", booking.date),
+                    where("status", "==", "confirmed")
+                );
+                const querySnapshot = await getDocs(q);
+                const booked = querySnapshot.docs.map(doc => doc.data().slot);
+                setBookedSlots(booked);
+            } catch (error) {
+                console.error("Error fetching booked slots:", error);
+            } finally {
+                setIsLoadingSlots(false);
+            }
+        };
+        fetchBookedSlots();
+    }, [booking.date]);
+
     const getAvailableSlots = (dateStr: string) => {
         if (!dateStr) return [];
         const selectedDate = new Date(dateStr);
@@ -81,8 +106,10 @@ const SlotSelection = () => {
                         selectedDate.getMonth() === now.getMonth() && 
                         selectedDate.getDate() === now.getDate();
 
+        let available = standardSlots;
+
         if (isToday) {
-            return standardSlots.filter(s => {
+            available = standardSlots.filter((s: string) => {
                 const [time, period] = s.split(' ');
                 let [hours, minutes] = time.split(':').map(Number);
                 if (period === 'PM' && hours !== 12) hours += 12;
@@ -93,7 +120,9 @@ const SlotSelection = () => {
                 return slotTime > now;
             });
         }
-        return standardSlots;
+
+        // Filter out already booked slots
+        return available.filter((s: string) => !bookedSlots.includes(s));
     };
 
     const handleContinue = () => {
@@ -158,17 +187,27 @@ const SlotSelection = () => {
             {booking.date && (
                 <div className={styles.slotsSection}>
                     <p className={styles.slotsTitle}>Available Slots for {booking.date}</p>
-                    <div className={styles.slotsGrid}>
-                        {getAvailableSlots(booking.date).map(s => (
-                            <button 
-                                key={s} 
-                                className={`${styles.slotBtn} ${booking.slot === s ? styles.selectedSlot : ''}`}
-                                onClick={() => updateBooking({ slot: s })}
-                            >
-                                <Clock size={16} /> {s}
-                            </button>
-                        ))}
-                    </div>
+                    {isLoadingSlots ? (
+                        <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+                            <Loader2 size={24} className="spinner" />
+                        </div>
+                    ) : getAvailableSlots(booking.date).length > 0 ? (
+                        <div className={styles.slotsGrid}>
+                            {getAvailableSlots(booking.date).map((s: string) => (
+                                <button 
+                                    key={s} 
+                                    className={`${styles.slotBtn} ${booking.slot === s ? styles.selectedSlot : ''}`}
+                                    onClick={() => updateBooking({ slot: s })}
+                                >
+                                    <Clock size={16} /> {s}
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className={styles.noSlotsMessage}>
+                            <p>No slots available for this date. Please try another date!</p>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -525,7 +564,10 @@ const SuccessStep = () => {
                     <code>{currentMeetLink}</code>
                     <button 
                         className={styles.joinBtn} 
-                        onClick={() => window.open(currentMeetLink.startsWith('http') ? currentMeetLink : `https://${currentMeetLink}`, '_blank')}
+                        onClick={() => {
+                            const link = currentMeetLink.startsWith('http') ? currentMeetLink : `https://${currentMeetLink}`;
+                            window.open(link, '_blank');
+                        }}
                     >
                         Join Meet
                     </button>

@@ -1,8 +1,6 @@
-// src/lib/firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -19,13 +17,11 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 // Export initialized services with safety check
 let auth: any = null;
 let db: any = null;
-let storage: any = null;
 
 if (firebaseConfig.apiKey) {
     try {
         auth = getAuth(app);
         db = getFirestore(app);
-        storage = getStorage(app);
     } catch (e) {
         console.error("Firebase services failed to initialize:", e);
     }
@@ -34,4 +30,4 @@ if (firebaseConfig.apiKey) {
     console.warn("Firebase: NEXT_PUBLIC_FIREBASE_API_KEY is missing. Auth and Database will be disabled.");
 }
 
-export { auth, db, storage };
+export { auth, db };

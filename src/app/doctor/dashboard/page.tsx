@@ -16,8 +16,10 @@ import {
   FileText,
   ClipboardList,
   Plus,
-  Trash2
+  Trash2,
+  MessageCircle
 } from 'lucide-react';
+import ChatWindow from '@/components/Chat/ChatWindow';
 import { 
   collection, 
   query, 
@@ -32,12 +34,15 @@ import {
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import styles from './doctor.module.css';
 
 interface Appointment {
   id: string;
   patientName: string;
   patientEmail: string;
+  patientId: string;
+  patientPhone?: string;
   date: string;
   slot: string;
   status: 'pending' | 'confirmed' | 'completed';
@@ -56,6 +61,7 @@ export default function DoctorDashboard() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
   const [activeApt, setActiveApt] = useState<Appointment | null>(null);
+  const [activeChat, setActiveChat] = useState<Appointment | null>(null);
   const [isSavingPrescription, setIsSavingPrescription] = useState(false);
   const [prescriptionForm, setPrescriptionForm] = useState({
     diagnosis: '',
@@ -65,11 +71,6 @@ export default function DoctorDashboard() {
     followUpMode: 'Online'
   });
 
-  // Protected route for Dr. Reitika (or any logged in doctor)
-  useEffect(() => {
-    // If we wanted to strictly protect via user.email, we could, 
-    // but the hardcoded login handles redirection.
-  }, [user, router]);
 
   useEffect(() => {
     const q = query(collection(db, "appointments"), orderBy("createdAt", "desc"));
@@ -238,7 +239,8 @@ export default function DoctorDashboard() {
   }
 
   return (
-    <div className={styles.container}>
+    <ProtectedRoute allowedRole="doctor">
+      <div className={styles.container}>
       {/* Photo Expansion Modal */}
       {selectedPhoto && (
         <div className={styles.modal} onClick={() => setSelectedPhoto(null)}>
@@ -396,6 +398,14 @@ export default function DoctorDashboard() {
                         >
                           <FileText size={18} />
                         </button>
+                        <button 
+                          className={styles.actionBtn}
+                          onClick={() => setActiveChat(apt)}
+                          title="Open Chat"
+                          style={{ background: '#f0fdfa', color: 'var(--primary)', borderColor: 'var(--primary)' }}
+                        >
+                          <MessageCircle size={18} />
+                        </button>
                         {apt.status !== 'completed' && (
                           <button 
                             className={`${styles.actionBtn} ${styles.completeBtn}`}
@@ -455,6 +465,13 @@ export default function DoctorDashboard() {
                       style={{ background: '#f0fdfa', color: 'var(--primary)', borderColor: 'var(--primary)', flex: 1 }}
                     >
                       <FileText size={18} /> Prescription
+                    </button>
+                    <button 
+                      className={styles.actionBtn}
+                      onClick={() => setActiveChat(apt)}
+                      style={{ background: '#f0fdfa', color: 'var(--primary)', borderColor: 'var(--primary)' }}
+                    >
+                      <MessageCircle size={18} />
                     </button>
                     {apt.status !== 'completed' && (
                       <button 
@@ -614,6 +631,20 @@ export default function DoctorDashboard() {
           </div>
         </div>
       )}
-    </div>
+      {/* Chat Window Overlay */}
+      {activeChat && (
+        <ChatWindow 
+          chatId={activeChat.patientId}
+          currentUserId={user?.id || 'doctor'}
+          currentUserName="Dr. Reetika"
+          otherPartyName={activeChat.patientName}
+          otherPartyPhone={activeChat.patientPhone}
+          meetLink={activeChat.meetLink}
+          onClose={() => setActiveChat(null)}
+          isDoctor={true}
+        />
+      )}
+      </div>
+    </ProtectedRoute>
   );
 }

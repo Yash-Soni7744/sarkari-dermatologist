@@ -32,12 +32,7 @@ export default function Header() {
             {user?.role !== 'doctor' && (
               <li><Link href="/book" onClick={() => setIsMenuOpen(false)}>Book Appointment</Link></li>
             )}
-            {/* Chat disabled per user request */}
-            {user && (
-              <li className={styles.disabledLink}>
-                <span title="Chat currently disabled">Chat</span>
-              </li>
-            )}
+            {/* Chat link removed per user request */}
           </ul>
         </nav>
 
