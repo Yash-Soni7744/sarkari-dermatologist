@@ -520,6 +520,225 @@
   justify-content: center;
 }
 
+.lhHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #1a1a1a;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+.doctorBranding {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.lhLogo {
+  width: 60px;
+  height: 60px;
+  background: #f0fdfa;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drName {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.drDegree {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin: 2px 0;
+}
+
+.drTitle {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #718096;
+  margin: 0;
+}
+
+.drLocation {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-top: 4px;
+}
+
+.lhMeta {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  border: 1px solid #e2e8f0;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 8px;
+}
+
+.metaRow:last-child {
+  margin-bottom: 0;
+}
+
+.metaRow span {
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+.metaRow strong {
+  color: #1a1a1a;
+}
+
+.lhSection {
+  margin-bottom: 35px;
+}
+
+.lhSectionTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+}
+
+.diagnosisBox {
+  background: white;
+}
+
+.diagnosisContent {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #2d3748;
+}
+
+.lhDisclaimer {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #718096;
+  margin-top: 8px;
+}
+
+.rxSymbol {
+  font-family: 'Times New Roman', serif;
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.medTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.medTable th {
+  text-align: left;
+  padding: 12px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.medTable td {
+  padding: 15px 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 0.95rem;
+  color: #1e293b;
+}
+
+.adviceList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adviceItem {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 1rem;
+  color: #2d3748;
+}
+
+.adviceIcon {
+  color: var(--primary);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.lhSignature {
+  margin-top: 50px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sigBlock {
+  text-align: right;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 15px;
+  min-width: 250px;
+}
+
+.sigName {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #1a1a1a;
+  margin-bottom: 2px;
+}
+
+.sigDegree {
+  font-size: 0.85rem;
+  color: #4a5568;
+  margin-bottom: 2px;
+}
+
+.sigReg {
+  font-size: 0.85rem;
+  color: #718096;
+  margin-bottom: 4px;
+}
+
+.sigDigital {
+  font-size: 0.75rem;
+  color: var(--primary);
+  font-weight: 600;
+  font-style: italic;
+}
+
+.lhFooter {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
+.lhFooter p {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
 /* RESPONSIVE OVERRIDES LAST */
 @media (max-width: 1024px) {
   .dashboardGrid {
