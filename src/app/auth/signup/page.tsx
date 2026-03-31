@@ -16,11 +16,24 @@ export default function SignupPage() {
         name: '',
         email: '',
         phone: '',
+        countryCode: '+91',
         password: '',
         age: '',
         gender: 'Male',
         bloodGroup: 'O+'
     });
+
+    const countryCodes = [
+        { code: '+91', label: 'India' },
+        { code: '+1', label: 'USA' },
+        { code: '+44', label: 'UK' },
+        { code: '+971', label: 'UAE' },
+        { code: '+61', label: 'Australia' },
+        { code: '+65', label: 'Singapore' },
+        { code: '+1', label: 'Canada' },
+        { code: '+49', label: 'Germany' },
+        { code: '+33', label: 'France' },
+    ];
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -29,6 +42,13 @@ export default function SignupPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // --- Validation: 10 digit phone no. ---
+        if (!/^\d{10}$/.test(formData.phone)) {
+            alert("10 digit phone no. it must be");
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 
@@ -36,7 +56,7 @@ export default function SignupPage() {
             await signup(formData.password, {
                 name: formData.name,
                 email: formData.email,
-                phone: formData.phone,
+                phone: `${formData.countryCode} ${formData.phone}`,
                 role: 'patient',
                 age: formData.age,
                 gender: formData.gender,
@@ -101,15 +121,31 @@ export default function SignupPage() {
                         <label className={styles.label}>Phone Number</label>
                         <div className={styles.inputWrapper}>
                             <Phone className={styles.inputIcon} size={18} />
-                            <input
-                                name="phone"
-                                type="tel"
-                                placeholder="+91 98765 43210"
-                                className={styles.input}
-                                value={formData.phone}
-                                onChange={handleChange}
-                                required
-                            />
+                            <div className={styles.phoneInputContainer}>
+                                <div className={styles.countrySelectWrapper}>
+                                    <select
+                                        name="countryCode"
+                                        className={styles.countrySelect}
+                                        value={formData.countryCode}
+                                        onChange={handleChange}
+                                    >
+                                        {countryCodes.map((c, idx) => (
+                                            <option key={idx} value={c.code}>
+                                                {c.code} ({c.label})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <input
+                                    name="phone"
+                                    type="tel"
+                                    placeholder="98765 43210"
+                                    className={styles.numberInput}
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
                         </div>
                     </div>
 

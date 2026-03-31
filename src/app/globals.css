@@ -34,9 +34,15 @@
   --destructive-foreground: #ffffff;
 
   /* Layout */
-  --radius: 0.5rem;
+  --radius: 0.8rem;
   --container-width: 1200px;
-  --header-height: 4rem;
+  --header-height: 4.5rem;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --header-height: 4rem;
+  }
 }
 
 * {
@@ -53,6 +59,13 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
+  font-size: 16px;
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 15px; /* Slightly smaller base for mobile */
+  }
 }
 
 h1,
@@ -76,7 +89,19 @@ a {
   width: 100%;
   max-width: var(--container-width);
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 1.25rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .container {
+    padding: 0 1rem;
+  }
 }
 
 /* Utility to visually hide elements but keep them accessible */
@@ -90,4 +115,28 @@ a {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* Global Loading Spinner Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+.page-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--background);
 }

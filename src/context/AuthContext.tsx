@@ -55,8 +55,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const docSnap = await getDoc(docRef);
         
         if (docSnap.exists()) {
+          const userData = docSnap.data() as User;
+          
+          // Ensure professional name for the doctor role
+          if (userData.role === 'doctor') {
+            userData.name = 'Dr. Reetika Pal';
+          }
+          
           setUser({
-            ...docSnap.data() as User,
+            ...userData,
             id: firebaseUser.uid,
           });
         } else {
@@ -84,10 +91,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (email === 'reitika6@gmail.com' && password === '12345678') {
         const doctorUser: User = {
           id: 'doctor-reitika',
-          name: 'Dr. Reitika',
+          name: 'Dr. Reetika Pal',
           email: 'reitika6@gmail.com',
           role: 'doctor',
-          avatar: 'https://ui-avatars.com/api/?name=Dr+Reitika&background=0d9488&color=fff'
+          avatar: 'https://ui-avatars.com/api/?name=Dr+Reetika+Pal&background=0d9488&color=fff'
         };
         setUser(doctorUser);
         router.push('/doctor/dashboard');

@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { BookingProvider, useBooking, PatientType } from '@/context/BookingContext';
@@ -23,6 +23,7 @@ import {
   Copy,
   X
 } from 'lucide-react';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import styles from './book.module.css';
@@ -463,7 +464,7 @@ const PaymentStep = () => {
 
         } catch (error: any) {
             console.error('Payment Error:', error.message);
-            alert('Something went wrong. Please try again.');
+            alert(error.message || 'Something went wrong. Please try again.');
         } finally {
             setIsPaying(false);
         }
@@ -550,11 +551,13 @@ function BookingContent() {
     const searchParams = useSearchParams();
     const [isVerifying, setIsVerifying] = useState(false);
     const [verificationError, setVerificationError] = useState<string | null>(null);
+    const isVerifyingInProgress = useRef(false);
 
     // Handle Cashfree Callback & State Recovery
     useEffect(() => {
         const orderId = searchParams.get('order_id');
-        if (orderId && booking.step !== 4) {
+        if (orderId && booking.step !== 4 && !isVerifyingInProgress.current) {
+            isVerifyingInProgress.current = true;
             setIsVerifying(true);
             setVerificationError(null);
 
@@ -639,9 +642,11 @@ function BookingContent() {
 
     if (loading || !user || isVerifying) {
         return (
-            <div className={styles.loadingContainer}>
-                <Loader2 size={48} className="spinner" />
-                <p>{isVerifying ? "Verifying your payment and finalizing booking..." : "Checking authentication..."}</p>
+            <div className="page-loader">
+                <LoadingSpinner size={64} />
+                <p style={{ marginTop: '1rem', color: 'var(--primary)', fontWeight: '600' }}>
+                    {isVerifying ? "Verifying your payment and finalizing booking..." : "Checking authentication..."}
+                </p>
             </div>
         );
     }
@@ -700,7 +705,7 @@ export default function BookPage() {
         <BookingProvider>
             <Suspense fallback={
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
-                    <Loader2 size={48} className="spinner" />
+                    <LoadingSpinner size={48} />
                 </div>
             }>
                 <BookingContent />

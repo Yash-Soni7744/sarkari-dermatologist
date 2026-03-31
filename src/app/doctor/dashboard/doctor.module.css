@@ -179,7 +179,7 @@
   color: var(--primary);
 }
 
-/* Photo Gallery on Dashboard */
+/* Photo Gallery */
 .gallery {
   display: flex;
   gap: 10px;
@@ -241,8 +241,57 @@
   background: transparent;
   border: none;
   cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2100;
 }
 
+.closeBtn:hover {
+  opacity: 0.7;
+  transform: scale(1.1);
+}
+
+/* Desktop/Mobile toggle views */
+.desktopView {
+  display: block;
+}
+
+.mobileView {
+  display: none;
+}
+
+.mobileAptList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.mobileAptCard {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.mobCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.mobCardFooter {
+  display: flex;
+  gap: 10px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+}
+
+/* Responsive Overrides LAST */
 @media (max-width: 1024px) {
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
@@ -254,5 +303,214 @@
     flex-direction: column;
     text-align: center;
     gap: 20px;
+    padding: 20px;
   }
+
+  .container {
+    padding: 80px 15px 40px;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .statCard {
+    padding: 15px;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .statValue {
+    font-size: 1.25rem;
+  }
+
+  .desktopView {
+    display: none;
+  }
+
+  .mobileView {
+    display: block;
+  }
+  
+  .modal {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Prescription Modal Styles */
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border);
+}
+
+.prescriptionForm {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 5px 15px 5px 5px;
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.formSection h3 {
+  font-size: 1rem;
+  color: var(--primary);
+  margin-bottom: 5px;
+  border-left: 4px solid var(--primary);
+  padding-left: 10px;
+}
+
+.detailsRow {
+  display: flex;
+  gap: 30px;
+  background: var(--muted);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .detailsRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .medRow {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 12px;
+  }
+  .medRow input:first-child { grid-column: span 2; }
+  .removeBtn { grid-column: span 2; text-align: right; }
+}
+
+.prescriptionForm label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.prescriptionForm input, 
+.prescriptionForm textarea, 
+.prescriptionForm select {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.prescriptionForm textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.prescriptionForm input:focus, 
+.prescriptionForm textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.medsTable {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.medRow {
+  display: grid;
+  grid-template-columns: 2.5fr 1fr 2.5fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: white;
+  border: 1px dashed var(--primary);
+  color: var(--primary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.removeBtn {
+  color: #ef4444;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+/* Modal Content Override for Forms */
+.modalContent {
+  background: white !important;
+  border-radius: 20px !important;
+  padding: 30px !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+@media (max-width: 600px) {
+  .modalContent {
+     padding: 20px !important;
+     width: 98% !important;
+     border-radius: 12px !important;
+  }
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.primaryBtn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.secondaryBtn {
+  background: white;
+  border: 1px solid var(--border);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
 }

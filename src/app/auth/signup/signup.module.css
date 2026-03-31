@@ -136,6 +136,49 @@
   text-decoration: underline;
 }
 
+/* Phone Input Specifics */
+.phoneInputContainer {
+  display: flex;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.phoneInputContainer:focus-within {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+.countrySelectWrapper {
+  position: relative;
+  border-right: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  padding-left: 2.5rem; /* Space for Phone icon */
+}
+
+.countrySelect {
+  border: none;
+  background: transparent;
+  padding: 0.75rem 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  outline: none;
+}
+
+.numberInput {
+  flex: 1;
+  border: none;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  outline: none;
+}
+
 .error {
   background-color: #fef2f2;
   color: #b91c1c;

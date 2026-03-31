@@ -12,7 +12,7 @@ export default function AboutPage() {
                         </div>
                         <div className={styles.heroText}>
                             <h1 className={styles.name}>Dr. Reetika Pal</h1>
-                            <p className={styles.credentials}>M.B.B.S, M.D. Dermatology</p>
+                            <p className={styles.credentials}>M.B.B.S, M.D. (Dermatology, Venereology & Leprosy)</p>
                             
                             <div className={styles.badge}>
                                 <Award size={18} />

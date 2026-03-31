@@ -108,7 +108,7 @@ export default function PatientInformation() {
                             <div className={styles.iconWrapper} style={{ backgroundColor: 'white' }}>
                                 <CheckCircle size={32} />
                             </div>
-                            <h3>Examples of Good Photos</h3>
+                            <h3>Importance of Good Photos</h3>
                             <p>Good photos provide the dermatologist with the clarity needed to make a confident assessment. The images should accurately represent the redness, texture, and size of the problem area.</p>
                             <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: 'var(--secondary)', borderRadius: 'var(--radius)', borderLeft: '4px solid var(--primary)' }}>
                                 <strong>Tip:</strong> If you're photographing a spot on your back or a hard-to-reach area, ask a family member or friend to help take the picture.

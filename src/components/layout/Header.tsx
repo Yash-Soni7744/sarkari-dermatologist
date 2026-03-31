@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Stethoscope, User, LogOut } from 'lucide-react';
+import { Menu, X, Stethoscope, User, LogOut, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import styles from './Header.module.css';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -42,7 +42,11 @@ export default function Header() {
         </nav>
 
         <div className={styles.actions}>
-          {!user ? (
+          {loading ? (
+            <div style={{ padding: '8px 24px' }}>
+              <Loader2 className="spinner" size={20} color="var(--primary)" />
+            </div>
+          ) : !user ? (
             <Link href="/auth/login" className={styles.ctaBtn} onClick={() => setIsMenuOpen(false)}>
               Login
             </Link>
@@ -54,9 +58,15 @@ export default function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <div className={styles.avatarSmall}>
-                  {user.avatar ? <img src={user.avatar} alt={user.name} /> : user.name[0]}
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} />
+                  ) : (
+                    user.role === 'doctor' ? 'DR' : user.name[0]
+                  )}
                 </div>
-                <span className={styles.userName}>{user.name.split(' ')[0]}</span>
+                <span className={styles.userName}>
+                  {user.role === 'doctor' ? 'Dr. Reetika' : user.name.split(' ')[0]}
+                </span>
               </Link>
               <button onClick={logout} className={styles.logoutBtn} title="Logout">
                 <LogOut size={18} />

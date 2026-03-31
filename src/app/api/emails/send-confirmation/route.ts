@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const data = await resend.emails.send({
-      from: 'Sarkari Dermatologist <onboarding@resend.dev>',
+      from: 'Sarkari Dermatologist <appointments@sarkaridermatologist.com>',
       to: [email],
       subject: 'Appointment Confirmed - Sarkari Dermatologist',
       html: `

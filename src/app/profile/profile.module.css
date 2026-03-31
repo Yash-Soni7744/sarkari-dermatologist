@@ -170,10 +170,13 @@
   background: rgba(13, 148, 136, 0.03);
   border: 1px solid rgba(13, 148, 136, 0.1);
   border-radius: 16px;
-  padding: 15px;
+  padding: 20px;
   display: flex;
   gap: 15px;
   margin-bottom: 15px;
+  min-height: 180px;
+  height: 180px;
+  position: relative;
 }
 
 .dateBox {
@@ -372,8 +375,231 @@
   margin-top: 30px;
 }
 
+/* Prescriptions */
+.prescriptionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prescriptionCard {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 180px;
+  height: 180px;
+}
+
+.prescriptionCard:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.08);
+}
+
+.presIcon {
+  width: 40px;
+  height: 40px;
+  background: rgba(13, 148, 136, 0.1);
+  color: var(--primary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.presContent {
+  flex: 1;
+}
+
+.presContent h4 {
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.presContent p {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.viewPresBtn {
+  background: rgba(13, 148, 136, 0.05);
+  color: var(--primary);
+  border: 1px solid rgba(13, 148, 136, 0.2);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.viewPresBtn:hover {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.05);
+}
+
+.scrollContainer {
+  max-height: 585px; /* (180px height + 15px margin) * 3 */
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+.scrollContainer::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollContainer::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 20px;
+}
+
+/* Letterhead Viewer */
+.prescriptionOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.letterheadContainer {
+  background: white;
+  width: 100%;
+  max-width: 850px;
+  max-height: 95vh;
+  border-radius: 4px; 
+  padding: 60px;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+  color: #1a1a1a;
+  font-family: 'Inter', sans-serif;
+  background-image: 
+    linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0.95)),
+    url('/icon.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 300px;
+  background-attachment: local;
+}
+
+.closeLetterhead {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #f1f5f9;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* RESPONSIVE OVERRIDES LAST */
 @media (max-width: 1024px) {
   .dashboardGrid {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 900px) {
+  .profileHeader {
+    flex-direction: column;
+    text-align: center;
+    gap: 30px;
+    padding: 30px 20px;
+  }
+  .profileInfo {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .avatarLarge {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+  }
+  .userDetails h1 {
+    font-size: 1.8rem;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 80px 15px 40px;
+  }
+  .card {
+    padding: 20px;
+    min-height: auto;
+  }
+  .prescriptionOverlay {
+    padding: 0;
+  }
+  .letterheadContainer {
+    padding: 40px 15px;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  .sigBlock {
+    min-width: 200px;
+    padding: 15px;
+  }
+  .drName {
+    font-size: 1.4rem;
+  }
+  .modalContent {
+    padding: 25px;
+    width: 95%;
+  }
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+  .inputGroup.full {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerActions {
+    width: 100%;
+    flex-direction: column;
+  }
+  .primaryBtn, .secondaryBtn {
+    width: 100%;
+    justify-content: center;
+  }
+  .appointmentCard, .prescriptionCard {
+    height: auto;
+    min-height: auto;
+    flex-direction: column;
+  }
+  .dateBox {
+    margin: 0 auto;
   }
 }
