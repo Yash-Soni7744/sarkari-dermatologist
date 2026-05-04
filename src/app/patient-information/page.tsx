@@ -27,7 +27,7 @@ export default function PatientInformation() {
     const faqs = [
         {
             question: "Is tele-dermatology as effective as an in-person visit?",
-            answer: "Yes, for the majority of skin conditions, clear photos and video consultations are just as effective as in-person visits. Our dermatologists can diagnose and treat conditions like acne, rashes, eczema, and hair loss accurately via tele-dermatology."
+            answer: "Yes, for the majority of skin conditions, clear photos and video consultations are just as effective as in-person visits. Our dermatologist can diagnose and treat conditions like acne, rashes, eczema, and hair loss accurately via tele-dermatology."
         },
         {
             question: "What if the doctor needs a closer look?",
@@ -50,7 +50,7 @@ export default function PatientInformation() {
                 <div className="container">
                     <h1 className={styles.heroTitle}>Patient Information</h1>
                     <p className={styles.heroSubtitle}>
-                        Everything you need to know to prepare for your tele-dermatology consultation. Follow these guidelines to ensure the best possible care from our experts.
+                        Everything you need to know to prepare for your tele-dermatology consultation. Follow these guidelines to ensure the best possible care from our expert.
                     </p>
                 </div>
             </section>

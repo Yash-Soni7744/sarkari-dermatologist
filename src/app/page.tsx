@@ -21,26 +21,31 @@ export default function Home() {
       <section className={styles.hero}>
         <div className="container">
           <div className={styles.heroContent}>
-            <h1 className={styles.heroTitle}>
-              Expert Dermatology Care, <br />
-              <span style={{ color: "var(--primary)" }}>Anytime, Anywhere.</span>
-            </h1>
-            <p className={styles.heroSubtitle}>
-              Consult India's leading dermatologist online. FDA-approved treatments for acne, hair loss, and skin conditions. Accessible for patients globally.
-            </p>
-            <div className={styles.heroButtons}>
-              {user?.role === 'doctor' ? (
-                <Link href="/doctor/dashboard" className={styles.primaryBtn}>
-                  Go to Dashboard <ArrowRight size={20} style={{ marginLeft: "0.5rem" }} />
+            <div className={styles.heroText}>
+              <h1 className={styles.heroTitle}>
+                Expert Dermatology Care, <br />
+                <span style={{ color: "var(--primary)" }}>Anytime, Anywhere.</span>
+              </h1>
+              <p className={styles.heroSubtitle}>
+                Consult India's leading dermatologist online. FDA-approved treatments for acne, hair loss, and skin conditions. Accessible for patients globally.
+              </p>
+              <div className={styles.heroButtons}>
+                {user?.role === 'doctor' ? (
+                  <Link href="/doctor/dashboard" className={styles.primaryBtn}>
+                    Go to Dashboard <ArrowRight size={20} style={{ marginLeft: "0.5rem" }} />
+                  </Link>
+                ) : (
+                  <Link href="/book" className={styles.primaryBtn}>
+                    Book Appointment <ArrowRight size={20} style={{ marginLeft: "0.5rem" }} />
+                  </Link>
+                )}
+                <Link href="/services" className={styles.secondaryBtn}>
+                  View Services
                 </Link>
-              ) : (
-                <Link href="/book" className={styles.primaryBtn}>
-                  Book Appointment <ArrowRight size={20} style={{ marginLeft: "0.5rem" }} />
-                </Link>
-              )}
-              <Link href="/services" className={styles.secondaryBtn}>
-                View Services
-              </Link>
+              </div>
+            </div>
+            <div className={styles.heroImage}>
+              <img src="/images/dr-reetika-pal.jpg" alt="Dr. Reetika Pal" />
             </div>
           </div>
         </div>
@@ -90,8 +95,8 @@ export default function Home() {
               <div className={styles.stepIconWrapper} style={{ backgroundColor: "white" }}>
                 <ShieldCheck size={32} />
               </div>
-              <h3>Verified Experts</h3>
-              <p>All doctors are board-certified and medically registered.</p>
+              <h3>Verified Expert</h3>
+              <p>The doctor is board-certified and medically registered.</p>
             </div>
             <div className={styles.stepCard} style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
               <div className={styles.stepIconWrapper} style={{ backgroundColor: "white" }}>
@@ -122,7 +127,7 @@ export default function Home() {
               <div className={styles.stars}>
                 {[1, 2, 3, 4, 5].map((s) => <Star key={s} size={16} fill="currentColor" />)}
               </div>
-              <p>"The online consultation was so smooth. Dr. Sharma understood my skin issue immediately over video call."</p>
+              <p>"The online consultation was so smooth. Dr. Reetika Pal understood my skin issue immediately over video call."</p>
               <h4 style={{ marginTop: "1rem" }}>- Anjali P.</h4>
             </div>
             <div className={styles.testimonialCard}>

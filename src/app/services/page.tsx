@@ -54,14 +54,14 @@ export default function ServicesPage() {
             ]
         },
         {
-            title: "General Skin Care",
+            title: "Skin Diseases",
             icon: <Stethoscope size={24} />,
-            desc: "Expert diagnosis and treatment for all common and complex skin ailments.",
+            desc: "Expert diagnosis and evidence-based treatment for common and complex dermatological conditions.",
             items: [
-                "Eczema / dermatitis",
-                "Fungal & Bacterial infections",
-                "Psoriasis & Urticaria",
-                "Viral Infections & Allergies"
+                "Psoriasis",
+                "Fungal, bacterial and viral infections",
+                "Eczema/dermatitis",
+                "Urticaria and allergies"
             ]
         },
         {

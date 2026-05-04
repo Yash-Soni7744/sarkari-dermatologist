@@ -36,7 +36,7 @@ export default function Footer() {
                             {user?.role !== 'doctor' && (
                                 <li><Link href="/book">Book Appointment</Link></li>
                             )}
-                            <li><Link href="/patient-portal">Patient Portal</Link></li>
+                            <li><Link href="/patient-information">Patient Information</Link></li>
                         </ul>
                     </div>
 
@@ -57,16 +57,13 @@ export default function Footer() {
                         <ul>
                             <li>
                                 <Mail size={16} />
-                                <span>support@sarkariderm.com</span>
+                                <span>drreetikapal@gmail.com </span>
                             </li>
                             <li>
                                 <Phone size={16} />
-                                <span>+91 98765 43210</span>
+                                <span>+91 7696888114</span>
                             </li>
-                            <li>
-                                <MapPin size={16} />
-                                <span>Clinic Address, City, State, India</span>
-                            </li>
+
                         </ul>
                         <div className={styles.emergency}>
                             <p>For medical emergencies, please visit your nearest hospital.</p>

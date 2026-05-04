@@ -26,7 +26,7 @@ export default function AboutPage() {
                             <div className={styles.bio}>
                                 <p>Hello, and welcome.</p>
                                 <p>
-                                    I’m Dr. Reetika Pal, with a deep interest in overall skin health and patient-centred care. 
+                                    I'm Dr. (Lt Col ) Reetika Pal (Retd) with a deep interest in overall skin health and patient-centred care. 
                                     My goal is simple — to make reliable dermatological guidance accessible, convenient, and personalized for people wherever they are.
                                 </p>
                             </div>
@@ -44,7 +44,7 @@ export default function AboutPage() {
                         </p>
                         
                         <p>
-                            Before dedicating my practice to dermatology, I had the honour of serving as a <strong>Dermatologist and Medical Officer in the Indian Army</strong>. 
+                            Before dedicating my practice to dermatology, I had the honour of serving as a <strong>dermatologist in the Indian Army</strong>. 
                             The experience instilled in me a lifelong commitment to discipline, integrity, compassion, and service—principles that continue to shape the way I care for my patients today.
                         </p>
 
