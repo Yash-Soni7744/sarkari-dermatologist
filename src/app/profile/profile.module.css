@@ -226,12 +226,20 @@
   color: #eab308;
 }
 
+.statusText[data-status="pending_verification"] {
+  color: #d97706;
+}
+
 .statusText[data-status="confirmed"] {
   color: #22c55e;
 }
 
 .statusText[data-status="completed"] {
   color: #6366f1;
+}
+
+.statusText[data-status="rejected"] {
+  color: #dc2626;
 }
 
 .aptPhotoPreview {

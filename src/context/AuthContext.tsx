@@ -20,7 +20,6 @@ export interface User {
   phone?: string;
   age?: string;
   gender?: string;
-  bloodGroup?: string;
   avatar?: string;
 }
 
@@ -52,22 +51,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (firebaseUser) {
         // Fetch extra profile data from Firestore
         const docRef = doc(db, "users", firebaseUser.uid);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          const userData = docSnap.data() as User;
+        try {
+          const docSnap = await getDoc(docRef);
           
-          if (userData.role === 'doctor') {
-            userData.name = 'Dr. Reetika Pal';
+          if (docSnap.exists()) {
+            const userData = docSnap.data() as User;
+            
+            if (userData.role === 'doctor') {
+              userData.name = 'Dr. Reetika Pal';
+            }
+            
+            setUser({
+              ...userData,
+              id: firebaseUser.uid,
+            });
+            // Remove potential stale doctor session
+            localStorage.removeItem('doctor_session');
+          } else {
+            setUser({
+              id: firebaseUser.uid,
+              email: firebaseUser.email || '',
+              name: firebaseUser.displayName || 'User',
+              role: 'patient',
+            });
           }
-          
-          setUser({
-            ...userData,
-            id: firebaseUser.uid,
-          });
-          // Remove potential stale doctor session
-          localStorage.removeItem('doctor_session');
-        } else {
+        } catch (error) {
+          console.error("Failed to fetch user profile from Firestore:", error);
+          // Fallback to basic user profile data from firebaseAuth when offline or fetch fails
           setUser({
             id: firebaseUser.uid,
             email: firebaseUser.email || '',
@@ -154,6 +164,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Save to Firestore
       await setDoc(doc(db, "users", firebaseUser.uid), newUser);
+
+      // Automated WhatsApp Message
+      if (newUser.role === 'patient' && newUser.phone) {
+        try {
+          fetch('/api/notifications/whatsapp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              phone: newUser.phone,
+              name: newUser.name
+            })
+          });
+        } catch (waErr) {
+          console.error("WhatsApp trigger failed:", waErr);
+        }
+      }
       
       setUser(newUser);
       router.push('/');

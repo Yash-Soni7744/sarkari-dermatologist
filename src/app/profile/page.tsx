@@ -34,7 +34,7 @@ interface Appointment {
   id: string;
   date: string;
   slot: string;
-  status: 'pending' | 'confirmed' | 'completed';
+  status: 'pending' | 'pending_verification' | 'confirmed' | 'completed' | 'rejected';
   meetLink: string;
   patientId: string;
   photoUrl?: string; // Legacy
@@ -52,8 +52,7 @@ export default function ProfilePage() {
     name: '',
     age: '',
     phone: '',
-    gender: '',
-    bloodGroup: ''
+    gender: ''
   });
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
   const [isFetchingPrescriptions, setIsFetchingPrescriptions] = useState(true);
@@ -67,8 +66,7 @@ export default function ProfilePage() {
         name: user.name || '',
         age: user.age || '',
         phone: user.phone || '',
-        gender: user.gender || 'Male',
-        bloodGroup: user.bloodGroup || 'O+'
+        gender: user.gender || 'Male'
       });
     }
   }, [isEditModalOpen, user]);
@@ -177,7 +175,7 @@ export default function ProfilePage() {
   const todayStr = getLocalTodayStr();
 
   const upcomingApts = appointments.filter(a => {
-    return a.date >= todayStr && (a.status === 'pending' || a.status === 'confirmed');
+    return a.date >= todayStr && (a.status === 'pending' || a.status === 'pending_verification' || a.status === 'confirmed');
   });
 
   const previousApts = appointments.filter(a => !upcomingApts.find(u => u.id === a.id));
@@ -213,8 +211,6 @@ export default function ProfilePage() {
               <span>{user.age || '--'} Years</span>
               <span>•</span>
               <span>{user.gender || '--'}</span>
-              <span>•</span>
-              <span>Blood Group: {user.bloodGroup || '--'}</span>
             </div>
           </div>
         </div>
@@ -277,7 +273,7 @@ export default function ProfilePage() {
                           <h4>Video Consultation</h4>
                           <p className={styles.aptMeta}>
                             <Clock size={14} style={{ marginRight: '4px' }} />
-                            {apt.slot} • <span className={styles.statusText} data-status={apt.status}>{apt.status}</span>
+                            {apt.slot} • <span className={styles.statusText} data-status={apt.status}>{apt.status === 'pending_verification' ? 'pending verification' : apt.status}</span>
                           </p>
                         </div>
                         {(() => {
@@ -301,16 +297,24 @@ export default function ProfilePage() {
                         })()}
                       </div>
                       <div className={styles.joinSection}>
-                        <div className={styles.linkDisplay}>
-                          <ExternalLink size={12} />
-                          <span>{apt.meetLink.substring(0, 20)}...</span>
-                        </div>
-                        <button className={styles.iconBtn} onClick={() => copyToClipboard(apt.meetLink)} title="Copy Link">
-                          <Copy size={16} />
-                        </button>
-                        <button className={styles.joinBtn} onClick={() => window.open(apt.meetLink.startsWith('http') ? apt.meetLink : `https://${apt.meetLink}`, '_blank')}>
-                          Join
-                        </button>
+                        {apt.status === 'pending_verification' ? (
+                          <div style={{ flex: 1, textAlign: 'center', fontSize: '0.8rem', color: '#854d0e', background: '#fef9c3', padding: '8px', borderRadius: '8px', border: '1px solid #fef08a', fontWeight: '600' }}>
+                            Awaiting payment verification by doctor
+                          </div>
+                        ) : (
+                          <>
+                            <div className={styles.linkDisplay}>
+                              <ExternalLink size={12} />
+                              <span>{apt.meetLink.substring(0, 20)}...</span>
+                            </div>
+                            <button className={styles.iconBtn} onClick={() => copyToClipboard(apt.meetLink)} title="Copy Link">
+                              <Copy size={16} />
+                            </button>
+                            <button className={styles.joinBtn} onClick={() => window.open(apt.meetLink.startsWith('http') ? apt.meetLink : `https://${apt.meetLink}`, '_blank')}>
+                              Join
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -432,23 +436,7 @@ export default function ProfilePage() {
                   <option value="Other">Other</option>
                 </select>
               </div>
-              <div className={styles.inputGroup}>
-                <label>Blood Group</label>
-                <select 
-                  name="bloodGroup" 
-                  value={editForm.bloodGroup} 
-                  onChange={handleEditChange}
-                >
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                </select>
-              </div>
+
             </form>
             <div className={styles.modalFooter}>
               <button 

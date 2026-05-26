@@ -18,6 +18,9 @@ interface BookingState {
         meetLink?: string;
     };
     step: 1 | 2 | 3 | 4; // 1: Slot, 2: Details, 3: Payment, 4: Success
+    appointmentId?: string;
+    paymentReference?: string;
+    paymentScreenshot?: string;
 }
 
 interface BookingContextType {
@@ -32,7 +35,7 @@ const defaultState: BookingState = {
     date: '',
     slot: '',
     patientType: 'India',
-    amount: 800,
+    amount: 999,
     details: {
         name: '',
         phone: '',
@@ -41,7 +44,10 @@ const defaultState: BookingState = {
         photos: [],
         meetLink: '',
     },
-    step: 1
+    step: 1,
+    appointmentId: '',
+    paymentReference: '',
+    paymentScreenshot: '',
 };
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
@@ -52,9 +58,8 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
     const updateBooking = (data: Partial<BookingState>) => {
         setBooking(prev => {
             const newState = { ...prev, ...data };
-            // Update amount if patient type changed
             if (data.patientType) {
-                newState.amount = data.patientType === 'India' ? 800 : 3400; // Roughly $40
+                newState.amount = data.patientType === 'India' ? 999 : 3400; // Roughly $40
             }
             return newState;
         });

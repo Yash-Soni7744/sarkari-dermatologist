@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { User, Mail, Phone, Lock, Calendar, Droplets, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, Lock, Calendar, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { getFriendlyErrorMessage } from '@/lib/utils';
 import styles from './signup.module.css';
@@ -19,8 +19,7 @@ export default function SignupPage() {
         countryCode: '+91',
         password: '',
         age: '',
-        gender: 'Male',
-        bloodGroup: 'O+'
+        gender: 'Male'
     });
 
     const countryCodes = [
@@ -59,8 +58,7 @@ export default function SignupPage() {
                 phone: `${formData.countryCode} ${formData.phone}`,
                 role: 'patient',
                 age: formData.age,
-                gender: formData.gender,
-                bloodGroup: formData.bloodGroup
+                gender: formData.gender
             });
         } catch (err: any) {
             const firebaseErrorCode = err.code || '';
@@ -198,27 +196,7 @@ export default function SignupPage() {
                         </div>
                     </div>
 
-                    <div className={styles.inputGroup}>
-                        <label className={styles.label}>Blood Group</label>
-                        <div className={styles.inputWrapper}>
-                            <Droplets className={styles.inputIcon} size={18} />
-                            <select
-                                name="bloodGroup"
-                                className={styles.input}
-                                value={formData.bloodGroup}
-                                onChange={handleChange}
-                            >
-                                <option>O+</option>
-                                <option>O-</option>
-                                <option>A+</option>
-                                <option>A-</option>
-                                <option>B+</option>
-                                <option>B-</option>
-                                <option>AB+</option>
-                                <option>AB-</option>
-                            </select>
-                        </div>
-                    </div>
+
 
                     <button
                         type="submit"

@@ -6,8 +6,7 @@ import {
   Calendar as CalendarIcon, 
   Video, 
   CheckCircle, 
-  Clock, 
-  Stethoscope,
+  Stethoscope, 
   LogOut,
   ExternalLink,
   Search,
@@ -17,7 +16,8 @@ import {
   ClipboardList,
   Plus,
   Trash2,
-  MessageCircle
+  MessageCircle,
+  CreditCard
 } from 'lucide-react';
 import ChatWindow from '@/components/Chat/ChatWindow';
 import { 
@@ -45,9 +45,11 @@ interface Appointment {
   patientPhone?: string;
   date: string;
   slot: string;
-  status: 'pending' | 'confirmed' | 'completed';
+  status: 'pending' | 'pending_verification' | 'confirmed' | 'completed' | 'rejected';
   meetLink: string;
   photos?: string; // JSON string
+  paymentScreenshot?: string;
+  verificationStatus?: string;
   createdAt: Timestamp;
 }
 
@@ -57,9 +59,10 @@ export default function DoctorDashboard() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'confirmed' | 'completed'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending_verification' | 'confirmed' | 'completed'>('all');
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
+  const [reviewingApt, setReviewingApt] = useState<Appointment | null>(null);
   const [activeApt, setActiveApt] = useState<Appointment | null>(null);
   const [activeChat, setActiveChat] = useState<Appointment | null>(null);
   const [isSavingPrescription, setIsSavingPrescription] = useState(false);
@@ -82,6 +85,9 @@ export default function DoctorDashboard() {
         ...doc.data()
       })) as Appointment[];
 
+      // Filter out raw pending (unsubmitted/unpaid) appointments, but keep pending_verification
+      const validApts = apts.filter(apt => apt.status !== 'pending' && apt.status !== 'rejected');
+
       // Automatic status transition for past appointments
       for (const apt of apts) {
         if (apt.status === 'confirmed' && apt.date < today) {
@@ -95,7 +101,7 @@ export default function DoctorDashboard() {
         }
       }
 
-      setAppointments(apts);
+      setAppointments(validApts);
       setLoading(false);
     });
 
@@ -114,6 +120,32 @@ export default function DoctorDashboard() {
       });
     } catch (error) {
       console.error("Update failed:", error);
+    }
+  };
+
+  const handleReviewAction = async (id: string, action: 'approve' | 'reject') => {
+    try {
+      if (action === 'approve') {
+        await updateDoc(doc(db, "appointments", id), {
+          status: 'confirmed',
+          paymentStatus: 'paid',
+          verificationStatus: 'verified'
+        });
+        alert("Booking approved and confirmed!");
+      } else {
+        const confirmReject = window.confirm("Are you sure you want to reject this payment screenshot? This will reset the booking status to pending payment.");
+        if (!confirmReject) return;
+        await updateDoc(doc(db, "appointments", id), {
+          status: 'pending',
+          verificationStatus: 'rejected',
+          paymentScreenshot: ''
+        });
+        alert("Payment screenshot rejected. Patient will need to re-upload proof.");
+      }
+      setReviewingApt(null);
+    } catch (error) {
+      console.error("Error updating verification status:", error);
+      alert("Failed to update status. Please try again.");
     }
   };
 
@@ -212,6 +244,9 @@ export default function DoctorDashboard() {
     const matchesSearch = apt.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           apt.patientEmail.toLowerCase().includes(searchTerm.toLowerCase());
     
+    if (filterStatus === 'pending_verification') {
+      return matchesSearch && apt.status === 'pending_verification';
+    }
     if (filterStatus === 'confirmed') {
       return matchesSearch && apt.status === 'confirmed' && apt.date >= today;
     }
@@ -223,9 +258,9 @@ export default function DoctorDashboard() {
 
   const stats = {
     total: appointments.length,
-    pending: appointments.filter(a => a.status === 'pending').length,
     today: appointments.filter(a => a.date === new Date().toISOString().split('T')[0]).length,
     completed: appointments.filter(a => a.status === 'completed').length,
+    pendingVerification: appointments.filter(a => a.status === 'pending_verification').length,
   };
 
   if (loading) {
@@ -291,6 +326,7 @@ export default function DoctorDashboard() {
             }}
           >
             <option value="all">All Appointments</option>
+            <option value="pending_verification">Pending Verification</option>
             <option value="confirmed">Confirmed (Upcoming)</option>
             <option value="completed">Completed (History)</option>
           </select>
@@ -306,13 +342,7 @@ export default function DoctorDashboard() {
             <span className={styles.statLabel}>Total Patients</span>
           </div>
         </div>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon} style={{ background: '#fef9c3', color: '#854d0e' }}><Clock /></div>
-          <div>
-            <span className={styles.statValue}>{stats.pending}</span>
-            <span className={styles.statLabel}>New Requests</span>
-          </div>
-        </div>
+
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ background: '#dcfce7', color: '#166534' }}><CalendarIcon /></div>
           <div>
@@ -320,6 +350,15 @@ export default function DoctorDashboard() {
             <span className={styles.statLabel}>Appointments Today</span>
           </div>
         </div>
+
+        <div className={styles.statCard} onClick={() => setFilterStatus('pending_verification')} style={{ cursor: 'pointer', transition: 'transform 0.2s' }}>
+          <div className={styles.statIcon} style={{ background: '#fef9c3', color: '#854d0e' }}><CreditCard /></div>
+          <div>
+            <span className={styles.statValue}>{stats.pendingVerification}</span>
+            <span className={styles.statLabel}>Pending Review</span>
+          </div>
+        </div>
+
         <div className={styles.statCard}>
           <div className={styles.statIcon} style={{ background: '#e0e7ff', color: '#3730a3' }}><CheckCircle /></div>
           <div>
@@ -378,26 +417,39 @@ export default function DoctorDashboard() {
                     </td>
                     <td>
                       <span className={styles.status} data-status={apt.status}>
-                        {apt.status}
+                        {apt.status === 'pending_verification' ? 'Pending Review' : apt.status}
                       </span>
                     </td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button 
-                          className={`${styles.actionBtn} ${styles.joinBtn}`}
-                          onClick={() => window.open(apt.meetLink.startsWith('http') ? apt.meetLink : `https://${apt.meetLink}`, '_blank')}
-                          title="Join Meeting"
-                        >
-                          <ExternalLink size={18} />
-                        </button>
-                        <button 
-                          className={`${styles.actionBtn} ${styles.prescriptionBtn}`}
-                          onClick={() => handleOpenPrescription(apt)}
-                          title="Write Prescription"
-                          style={{ background: '#f0fdfa', color: 'var(--primary)', borderColor: 'var(--primary)' }}
-                        >
-                          <FileText size={18} />
-                        </button>
+                        {apt.status === 'pending_verification' ? (
+                          <button 
+                            className={styles.actionBtn}
+                            onClick={() => setReviewingApt(apt)}
+                            title="Review Payment Proof"
+                            style={{ background: '#fef9c3', color: '#854d0e', borderColor: '#eab308', display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <CreditCard size={18} /> Review Payment
+                          </button>
+                        ) : (
+                          <>
+                            <button 
+                              className={`${styles.actionBtn} ${styles.joinBtn}`}
+                              onClick={() => window.open(apt.meetLink.startsWith('http') ? apt.meetLink : `https://${apt.meetLink}`, '_blank')}
+                              title="Join Meeting"
+                            >
+                              <ExternalLink size={18} />
+                            </button>
+                            <button 
+                              className={`${styles.actionBtn} ${styles.prescriptionBtn}`}
+                              onClick={() => handleOpenPrescription(apt)}
+                              title="Write Prescription"
+                              style={{ background: '#f0fdfa', color: 'var(--primary)', borderColor: 'var(--primary)' }}
+                            >
+                              <FileText size={18} />
+                            </button>
+                          </>
+                        )}
                         <button 
                           className={styles.actionBtn}
                           onClick={() => setActiveChat(apt)}
@@ -406,7 +458,7 @@ export default function DoctorDashboard() {
                         >
                           <MessageCircle size={18} />
                         </button>
-                        {apt.status !== 'completed' && (
+                        {apt.status !== 'completed' && apt.status !== 'pending_verification' && (
                           <button 
                             className={`${styles.actionBtn} ${styles.completeBtn}`}
                             onClick={() => handleStatusUpdate(apt.id, 'completed')}
@@ -438,7 +490,7 @@ export default function DoctorDashboard() {
                       </div>
                     </div>
                     <span className={styles.status} data-status={apt.status}>
-                      {apt.status}
+                      {apt.status === 'pending_verification' ? 'Pending Review' : apt.status}
                     </span>
                   </div>
                   
@@ -453,19 +505,31 @@ export default function DoctorDashboard() {
                   </div>
 
                   <div className={styles.mobCardFooter}>
-                    <button 
-                      className={`${styles.actionBtn} ${styles.joinBtn}`}
-                      onClick={() => window.open(apt.meetLink.startsWith('http') ? apt.meetLink : `https://${apt.meetLink}`, '_blank')}
-                    >
-                      <ExternalLink size={18} /> Join
-                    </button>
-                    <button 
-                      className={`${styles.actionBtn} ${styles.prescriptionBtn}`}
-                      onClick={() => handleOpenPrescription(apt)}
-                      style={{ background: '#f0fdfa', color: 'var(--primary)', borderColor: 'var(--primary)', flex: 1 }}
-                    >
-                      <FileText size={18} /> Prescription
-                    </button>
+                    {apt.status === 'pending_verification' ? (
+                      <button 
+                        className={styles.actionBtn}
+                        onClick={() => setReviewingApt(apt)}
+                        style={{ background: '#fef9c3', color: '#854d0e', borderColor: '#eab308', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                      >
+                        <CreditCard size={18} /> Review Payment
+                      </button>
+                    ) : (
+                      <>
+                        <button 
+                          className={`${styles.actionBtn} ${styles.joinBtn}`}
+                          onClick={() => window.open(apt.meetLink.startsWith('http') ? apt.meetLink : `https://${apt.meetLink}`, '_blank')}
+                        >
+                          <ExternalLink size={18} /> Join
+                        </button>
+                        <button 
+                          className={`${styles.actionBtn} ${styles.prescriptionBtn}`}
+                          onClick={() => handleOpenPrescription(apt)}
+                          style={{ background: '#f0fdfa', color: 'var(--primary)', borderColor: 'var(--primary)', flex: 1 }}
+                        >
+                          <FileText size={18} /> Prescription
+                        </button>
+                      </>
+                    )}
                     <button 
                       className={styles.actionBtn}
                       onClick={() => setActiveChat(apt)}
@@ -473,7 +537,7 @@ export default function DoctorDashboard() {
                     >
                       <MessageCircle size={18} />
                     </button>
-                    {apt.status !== 'completed' && (
+                    {apt.status !== 'completed' && apt.status !== 'pending_verification' && (
                       <button 
                         className={`${styles.actionBtn} ${styles.completeBtn}`}
                         onClick={() => handleStatusUpdate(apt.id, 'completed')}
@@ -631,6 +695,89 @@ export default function DoctorDashboard() {
           </div>
         </div>
       )}
+
+      {/* Review Payment Modal */}
+      {reviewingApt && (
+        <div className={styles.modal} onClick={() => setReviewingApt(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', width: '90%', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+            <div className={styles.modalHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <CreditCard color="var(--primary)" size={24} />
+                <h2 style={{ margin: 0 }}>Verify Payment Screenshot</h2>
+              </div>
+              <button 
+                className={styles.closeBtn} 
+                onClick={() => setReviewingApt(null)}
+                style={{ top: '25px', right: '25px', color: 'var(--muted-foreground)' }}
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Scrollable Modal Content Body */}
+            <div style={{ overflowY: 'auto', flex: 1, paddingRight: '8px', marginBottom: '15px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', background: '#f8fafc', padding: '15px', borderRadius: '12px', fontSize: '0.9rem' }}>
+                  <div><strong>Patient Name:</strong> {reviewingApt.patientName}</div>
+                  <div><strong>Email:</strong> {reviewingApt.patientEmail}</div>
+                  <div><strong>Appointment Date:</strong> {reviewingApt.date}</div>
+                  <div><strong>Time Slot:</strong> {reviewingApt.slot}</div>
+                </div>
+
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ fontWeight: '600', marginBottom: '10px', fontSize: '0.95rem' }}>Uploaded Proof:</p>
+                  {reviewingApt.paymentScreenshot ? (
+                    <div 
+                      style={{ border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', maxHeight: '350px', background: '#eee', display: 'inline-block', cursor: 'pointer' }}
+                      onClick={() => setSelectedPhoto(reviewingApt.paymentScreenshot || null)}
+                      title="Click to view full screen"
+                    >
+                      <img 
+                        src={reviewingApt.paymentScreenshot} 
+                        alt="Payment Screenshot" 
+                        style={{ maxWidth: '100%', maxHeight: '350px', objectFit: 'contain', display: 'block' }} 
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ padding: '30px', background: '#fef2f2', color: '#ef4444', borderRadius: '12px', fontWeight: '500' }}>
+                      No screenshot uploaded!
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter} style={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginTop: 0, paddingTop: '15px' }}>
+              <button 
+                type="button" 
+                className={styles.secondaryBtn} 
+                onClick={() => handleReviewAction(reviewingApt.id, 'reject')}
+                style={{ borderColor: '#ef4444', color: '#ef4444' }}
+              >
+                Reject Payment
+              </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  type="button" 
+                  className={styles.secondaryBtn} 
+                  onClick={() => setReviewingApt(null)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button" 
+                  className={styles.primaryBtn} 
+                  onClick={() => handleReviewAction(reviewingApt.id, 'approve')}
+                  style={{ background: '#10b981' }}
+                >
+                  Approve Booking
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Chat Window Overlay */}
       {activeChat && (
         <ChatWindow 

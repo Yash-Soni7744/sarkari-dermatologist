@@ -57,7 +57,7 @@ export default function Footer() {
                         <ul>
                             <li>
                                 <Mail size={16} />
-                                <span>drreetikapal@gmail.com </span>
+                                <span>sarkaridermatologist@gmail.com </span>
                             </li>
                             <li>
                                 <Phone size={16} />
