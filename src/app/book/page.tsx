@@ -983,6 +983,16 @@ function BookingContent() {
         }
     }, [user, loading, router]);
 
+    // Pre-select patient type from query parameter (?type=India or ?type=International)
+    useEffect(() => {
+        const typeParam = searchParams.get('type');
+        if (typeParam === 'India' || typeParam === 'International') {
+            if (booking.patientType !== typeParam) {
+                updateBooking({ patientType: typeParam });
+            }
+        }
+    }, [searchParams, booking.patientType, updateBooking]);
+
     if (loading || !user || isVerifying) {
         return (
             <div className="page-loader">
