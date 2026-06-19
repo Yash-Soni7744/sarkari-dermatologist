@@ -21,6 +21,7 @@ interface BookingState {
     appointmentId?: string;
     paymentReference?: string;
     paymentScreenshot?: string;
+    paymentMethod?: string;
 }
 
 interface BookingContextType {
