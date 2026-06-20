@@ -36,7 +36,7 @@ const defaultState: BookingState = {
     date: '',
     slot: '',
     patientType: 'India',
-    amount: 999,
+    amount: 0.1,
     details: {
         name: '',
         phone: '',
@@ -49,6 +49,7 @@ const defaultState: BookingState = {
     appointmentId: '',
     paymentReference: '',
     paymentScreenshot: '',
+    paymentMethod: '',
 };
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
@@ -60,7 +61,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
         setBooking(prev => {
             const newState = { ...prev, ...data };
             if (data.patientType) {
-                newState.amount = data.patientType === 'India' ? 999 : 3400; // Roughly $40
+                newState.amount = data.patientType === 'India' ? 0.1 : 3400; // Roughly $40
             }
             return newState;
         });

@@ -156,7 +156,7 @@ const SlotSelection = () => {
                             <div className={styles.discountBadge}>Starting Discount</div>
                             <div className={styles.discountBadge}>New Patient Offer</div>
                         </div>
-                        <div className={styles.finalPrice}>₹999</div>
+                        <div className={styles.finalPrice}>₹0.1</div>
                     </div>
                     {booking.patientType === 'India' && (
                         <div style={{ position: 'absolute', top: '15px', right: '15px', color: 'var(--primary)' }}>
