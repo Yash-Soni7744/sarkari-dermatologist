@@ -109,11 +109,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       // 1. Hardcoded Doctor Login Check
-      if (email === 'reitika6@gmail.com' && password === '12345678') {
+      if (email === 'sarkaridermatologist@gmail.com' && password === '12345678') {
         const doctorUser: User = {
           id: 'doctor-reitika',
           name: 'Dr. Reetika Pal',
-          email: 'reitika6@gmail.com',
+          email: 'sarkaridermatologist@gmail.com',
           role: 'doctor',
           avatar: 'https://ui-avatars.com/api/?name=Dr+Reetika+Pal&background=0d9488&color=fff'
         };
