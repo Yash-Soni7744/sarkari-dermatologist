@@ -82,7 +82,7 @@ export default function PricingPage() {
             <h2 className={styles.planTitle}>Patients in India</h2>
             
             <div className={styles.priceWrapper}>
-              <span className={styles.price}>₹1</span>
+              <span className={styles.price}>₹999</span>
               <span className={styles.period}>/ consult</span>
             </div>
 
@@ -185,7 +185,7 @@ export default function PricingPage() {
             <tbody>
               <tr>
                 <td>Doctor's Consultation Fee</td>
-                <td>₹1</td>
+                <td>₹999</td>
                 <td>$40 (equivalent to ₹3,400)</td>
               </tr>
               <tr>
@@ -205,7 +205,7 @@ export default function PricingPage() {
               </tr>
               <tr className={styles.highlightRow}>
                 <td><strong>Final Amount Billed</strong></td>
-                <td><strong>₹1 only</strong></td>
+                <td><strong>₹999 only</strong></td>
                 <td><strong>$40 (₹3,400) only</strong></td>
               </tr>
             </tbody>
@@ -246,7 +246,7 @@ export default function PricingPage() {
               </h3>
               <ul className={styles.valueList}>
                 <li className={styles.valueItem}>
-                  <strong>Consultation Fee:</strong> Just <strong>₹1 / $40</strong> for verified top board-certified care.
+                  <strong>Consultation Fee:</strong> Just <strong>₹999 / $40</strong> for verified top board-certified care.
                 </li>
                 <li className={styles.valueItem}>
                   <strong>Travel & Commute:</strong> <strong>₹0</strong>. Conduct from the absolute comfort of home.
