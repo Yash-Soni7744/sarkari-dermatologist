@@ -15,6 +15,7 @@ export async function POST(request: Request) {
     const data = await resend.emails.send({
       from: 'Sarkari Dermatologist <appointments@sarkaridermatologist.com>',
       to: [email],
+      bcc: 'sarkaridermatologist@gmail.com',
       subject: 'Appointment Confirmed - Sarkari Dermatologist',
       html: `
         <!DOCTYPE html>
