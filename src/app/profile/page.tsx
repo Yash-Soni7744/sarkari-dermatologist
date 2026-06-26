@@ -52,7 +52,8 @@ export default function ProfilePage() {
     name: '',
     age: '',
     phone: '',
-    gender: ''
+    gender: '',
+    email: ''
   });
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
   const [isFetchingPrescriptions, setIsFetchingPrescriptions] = useState(true);
@@ -66,7 +67,8 @@ export default function ProfilePage() {
         name: user.name || '',
         age: user.age || '',
         phone: user.phone || '',
-        gender: user.gender || 'Male'
+        gender: user.gender || 'Male',
+        email: user.email || ''
       });
     }
   }, [isEditModalOpen, user]);
@@ -84,9 +86,9 @@ export default function ProfilePage() {
     try {
       await updateUser(editForm);
       setIsEditModalOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Save Error:", error);
-      alert("Failed to save changes.");
+      alert(error?.message || "Failed to save changes.");
     } finally {
       setIsSaving(false);
     }
@@ -301,16 +303,29 @@ export default function ProfilePage() {
                           <div style={{ flex: 1, textAlign: 'center', fontSize: '0.8rem', color: '#854d0e', background: '#fef9c3', padding: '8px', borderRadius: '8px', border: '1px solid #fef08a', fontWeight: '600' }}>
                             Awaiting payment verification by doctor
                           </div>
+                        ) : apt.meetLink && apt.meetLink.includes('wa.me') ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '8px' }}>
+                            <p style={{ fontSize: '0.85rem', margin: '0 0 4px', color: 'var(--muted-foreground)', fontWeight: '500' }}>
+                              Consultation via WhatsApp video call.
+                            </p>
+                            <button 
+                              className={styles.joinBtn} 
+                              style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', padding: '10px 0' }}
+                              onClick={() => window.open(apt.meetLink, '_blank')}
+                            >
+                              <MessageCircle size={14} /> Message Doctor
+                            </button>
+                          </div>
                         ) : (
                           <>
                             <div className={styles.linkDisplay}>
                               <ExternalLink size={12} />
-                              <span>{apt.meetLink.substring(0, 20)}...</span>
+                              <span>{apt.meetLink?.substring(0, 20)}...</span>
                             </div>
-                            <button className={styles.iconBtn} onClick={() => copyToClipboard(apt.meetLink)} title="Copy Link">
+                            <button className={styles.iconBtn} onClick={() => copyToClipboard(apt.meetLink || '')} title="Copy Link">
                               <Copy size={16} />
                             </button>
-                            <button className={styles.joinBtn} onClick={() => window.open(apt.meetLink.startsWith('http') ? apt.meetLink : `https://${apt.meetLink}`, '_blank')}>
+                            <button className={styles.joinBtn} onClick={() => window.open(apt.meetLink && apt.meetLink.startsWith('http') ? apt.meetLink : `https://${apt.meetLink}`, '_blank')}>
                               Join
                             </button>
                           </>
@@ -412,8 +427,14 @@ export default function ProfilePage() {
                 />
               </div>
               <div className={styles.inputGroup}>
-                <label>Email</label>
-                <input type="email" value={user.email} disabled />
+                <label>Email Address</label>
+                <input 
+                  name="email"
+                  type="email" 
+                  value={editForm.email} 
+                  onChange={handleEditChange} 
+                  required 
+                />
               </div>
               <div className={styles.inputGroup}>
                 <label>Phone</label>

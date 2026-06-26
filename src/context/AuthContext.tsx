@@ -9,7 +9,7 @@ import {
   signOut,
   User as FirebaseUser 
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 export interface User {
@@ -204,12 +204,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateUser = async (data: Partial<User>) => {
     if (user) {
+      // Check phone uniqueness if it is changing
+      if (data.phone && data.phone !== user.phone) {
+        const phoneQuery = query(collection(db, "users"), where("phone", "==", data.phone));
+        const phoneSnapshot = await getDocs(phoneQuery);
+        const exists = phoneSnapshot.docs.some(doc => doc.id !== user.id);
+        if (exists) {
+          throw new Error("This phone number is already registered to another account.");
+        }
+      }
+
+      // Check email uniqueness if it is changing
+      if (data.email && data.email !== user.email) {
+        const emailQuery = query(collection(db, "users"), where("email", "==", data.email));
+        const emailSnapshot = await getDocs(emailQuery);
+        const exists = emailSnapshot.docs.some(doc => doc.id !== user.id);
+        if (exists) {
+          throw new Error("This email address is already in use by another account.");
+        }
+      }
+
       const updatedUser = { ...user, ...data };
       try {
         await setDoc(doc(db, "users", user.id), updatedUser, { merge: true });
         setUser(updatedUser);
       } catch (error: any) {
         console.error("Update User Error:", error.message);
+        throw error;
       }
     }
   };

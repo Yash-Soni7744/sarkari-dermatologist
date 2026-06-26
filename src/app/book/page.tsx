@@ -22,11 +22,13 @@ import {
   ExternalLink,
   Copy,
   X,
-  Smartphone
+  Smartphone,
+  MessageCircle
 } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp, query, where, getDocs, onSnapshot } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp, query, where, getDocs, onSnapshot, setDoc } from 'firebase/firestore';
 import styles from './book.module.css';
 
 // --- Sub-components (Steps) ---
@@ -267,6 +269,16 @@ const PatientDetails = () => {
     const { user } = useAuth();
     const [uploading, setUploading] = useState(false);
 
+    // OTP State variables
+    const [otpPhone, setOtpPhone] = useState('');
+    const [otpName, setOtpName] = useState('');
+    const [otpCode, setOtpCode] = useState('');
+    const [otpSent, setOtpSent] = useState(false);
+    const [sendingOtp, setSendingOtp] = useState(false);
+    const [verifyingOtp, setVerifyingOtp] = useState(false);
+    const [otpError, setOtpError] = useState<string | null>(null);
+    const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
+
     // Auto-fill from user profile
     useEffect(() => {
         if (user && !booking.details.name) {
@@ -280,6 +292,97 @@ const PatientDetails = () => {
             });
         }
     }, [user, updateBooking, booking.details.name]);
+
+    const handleSendOtp = async () => {
+        if (!otpPhone || !otpName) {
+            setOtpError('Name and Phone number are required.');
+            return;
+        }
+        setSendingOtp(true);
+        setOtpError(null);
+        setDevOtpHint(null);
+        try {
+            const res = await fetch('/api/auth/otp/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: otpPhone, name: otpName }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                setOtpSent(true);
+                if (data.otp) {
+                    setDevOtpHint(`Development mode OTP: ${data.otp}`);
+                }
+            } else {
+                setOtpError(data.error || 'Failed to send OTP. Please try again.');
+            }
+        } catch (err: any) {
+            setOtpError(err.message || 'An error occurred while sending OTP.');
+        } finally {
+            setSendingOtp(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!otpCode) {
+            setOtpError('Please enter the verification code.');
+            return;
+        }
+        setVerifyingOtp(true);
+        setOtpError(null);
+        try {
+            const res = await fetch('/api/auth/otp/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: otpPhone, otp: otpCode }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                setOtpError(data.error || 'Verification failed. Please check the OTP.');
+                setVerifyingOtp(false);
+                return;
+            }
+
+            const { firebaseEmail, firebasePassword, name, phone } = data;
+            
+            try {
+                // 1. Try signing in
+                await signInWithEmailAndPassword(auth, firebaseEmail, firebasePassword);
+            } catch (signInError: any) {
+                // 2. Create new user account if it doesn't exist
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, firebaseEmail, firebasePassword);
+                    await setDoc(doc(db, "users", userCredential.user.uid), {
+                        id: userCredential.user.uid,
+                        name: name,
+                        email: firebaseEmail,
+                        phone: phone,
+                        role: 'patient',
+                        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`
+                    });
+                } catch (signUpError: any) {
+                    console.error("Sign up failed after OTP verification:", signUpError);
+                    setOtpError(signUpError.message || "Failed to create user account.");
+                    setVerifyingOtp(false);
+                    return;
+                }
+            }
+
+            // Sync booking details
+            updateBooking({
+                details: {
+                    ...booking.details,
+                    name: name,
+                    phone: phone,
+                    email: firebaseEmail
+                }
+            });
+        } catch (err: any) {
+            setOtpError(err.message || 'An error occurred during verification.');
+        } finally {
+            setVerifyingOtp(false);
+        }
+    };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -318,7 +421,6 @@ const PatientDetails = () => {
                             const ctx = canvas.getContext('2d');
                             ctx?.drawImage(img, 0, 0, width, height);
                             
-                            // Compress as JPEG with 0.6 quality for small footprint
                             const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
                             resolve({ url: dataUrl, name: file.name });
                         };
@@ -328,9 +430,8 @@ const PatientDetails = () => {
 
             const compressedPhotos = await Promise.all(files.map(compressImage));
             
-            // Safety check: Total size of all photos in Base64
             const totalSize = [...booking.details.photos, ...compressedPhotos].reduce((acc, p) => acc + p.url.length, 0);
-            const MAX_FIRESTORE_PAYLOAD = 800000; // ~800KB safety limit (Firestore limit is 1MB total)
+            const MAX_FIRESTORE_PAYLOAD = 800000;
 
             if (totalSize > MAX_FIRESTORE_PAYLOAD) {
                 alert('Total image size too large. Please upload fewer or smaller images.');
@@ -343,13 +444,12 @@ const PatientDetails = () => {
                     photos: [...booking.details.photos, ...compressedPhotos]
                 }
             });
-            // alert('Photos compressed and added!');
         } catch (error: any) {
             console.error('Upload Error:', error);
             alert(`Failed: ${error.message}`);
         } finally {
             setUploading(false);
-            if (e.target) e.target.value = ''; // Reset input
+            if (e.target) e.target.value = '';
         }
     };
 
@@ -374,27 +474,8 @@ const PatientDetails = () => {
 
         setUploading(true);
         try {
-            // Generate meeting link early
-            let meetLink = 'https://meet.google.com/pzl-fjpa-oxe';
-            try {
-                const meetRes = await fetch('/api/meetings/create-meeting', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        date: booking.date,
-                        slot: booking.slot,
-                        patientEmail: booking.details.email,
-                        patientName: booking.details.name
-                    })
-                });
-
-                const meetData = await meetRes.json();
-                if (meetRes.ok && meetData.meetLink) {
-                    meetLink = meetData.meetLink;
-                }
-            } catch (meetErr) {
-                console.warn('Could not create meet link, using fallback:', meetErr);
-            }
+            const doctorPhone = process.env.NEXT_PUBLIC_DOCTOR_PHONE || '919315227513';
+            const meetLink = `https://wa.me/${doctorPhone}`;
 
             const paymentReference = `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
@@ -430,6 +511,123 @@ const PatientDetails = () => {
             setUploading(false);
         }
     };
+
+    if (!user) {
+        return (
+            <div className={styles.card}>
+                <h2 className={styles.sectionTitle}>Verification Required</h2>
+                <p style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+                    To continue booking your appointment, please enter your name and verify your phone number. You can complete your profile later from the profile section.
+                </p>
+                <div className={styles.form}>
+                    <div className={styles.inputGroup}>
+                        <label>Full Name</label>
+                        <input 
+                            type="text" 
+                            required 
+                            placeholder="Enter your full name"
+                            value={otpName}
+                            disabled={otpSent || sendingOtp || verifyingOtp}
+                            onChange={e => setOtpName(e.target.value)}
+                        />
+                    </div>
+                    <div className={styles.inputGroup}>
+                        <label>Phone Number</label>
+                        <input 
+                            type="tel" 
+                            required 
+                            placeholder="e.g. +919876543210"
+                            value={otpPhone}
+                            disabled={otpSent || sendingOtp || verifyingOtp}
+                            onChange={e => setOtpPhone(e.target.value)}
+                        />
+                    </div>
+
+                    {otpSent && (
+                        <div className={styles.inputGroup} style={{ marginTop: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <label>Enter 6-digit OTP Code</label>
+                                <button 
+                                    type="button" 
+                                    className={styles.backBtn}
+                                    style={{ border: 'none', background: 'transparent', padding: 0, fontSize: '0.85rem', textDecoration: 'underline', color: 'var(--primary)', cursor: 'pointer' }}
+                                    onClick={() => { setOtpSent(false); setOtpCode(''); }}
+                                    disabled={verifyingOtp}
+                                >
+                                    Change Number
+                                </button>
+                            </div>
+                            <input 
+                                type="text" 
+                                maxLength={6}
+                                required 
+                                placeholder="Enter 6-digit OTP"
+                                value={otpCode}
+                                disabled={verifyingOtp}
+                                onChange={e => setOtpCode(e.target.value)}
+                                style={{ letterSpacing: '0.3em', textAlign: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}
+                            />
+                            {devOtpHint && (
+                                <p style={{ color: '#0d9488', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: '600' }}>
+                                    {devOtpHint}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    {otpError && (
+                        <p style={{ color: '#ef4444', fontSize: '0.9rem', marginTop: '0.5rem', fontWeight: '600' }}>
+                            {otpError}
+                        </p>
+                    )}
+
+                    <div className={styles.actions} style={{ marginTop: '1.5rem' }}>
+                        <button type="button" onClick={prevStep} className={styles.backBtn} disabled={sendingOtp || verifyingOtp}>
+                            Back
+                        </button>
+                        {!otpSent ? (
+                            <button 
+                                type="button" 
+                                className={styles.continueBtn} 
+                                onClick={handleSendOtp}
+                                disabled={sendingOtp || !otpName || !otpPhone}
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
+                            >
+                                {sendingOtp ? (
+                                    <>
+                                        <Loader2 size={16} className="spinner" />
+                                        Sending OTP...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Smartphone size={16} />
+                                        Send OTP
+                                    </>
+                                )}
+                            </button>
+                        ) : (
+                            <button 
+                                type="button" 
+                                className={styles.continueBtn} 
+                                onClick={handleVerifyOtp}
+                                disabled={verifyingOtp || otpCode.length < 6}
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
+                            >
+                                {verifyingOtp ? (
+                                    <>
+                                        <Loader2 size={16} className="spinner" />
+                                        Verifying OTP...
+                                    </>
+                                ) : (
+                                    'Verify & Continue'
+                                )}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.card}>
@@ -664,7 +862,9 @@ const SuccessStep = () => {
     const { booking } = useBooking();
     const router = useRouter();
 
-    const currentMeetLink = booking.details.meetLink || 'https://meet.google.com/pzl-fjpa-oxe';
+    const doctorPhone = process.env.NEXT_PUBLIC_DOCTOR_PHONE || '919315227513';
+    const messageText = encodeURIComponent(`Hello Dr. Reetika Pal, I have successfully booked an appointment for ${booking.date} at ${booking.slot}. Looking forward to the consultation.`);
+    const waUrl = `https://wa.me/${doctorPhone}?text=${messageText}`;
 
     return (
         <div className={styles.card} style={{ textAlign: 'center' }}>
@@ -684,22 +884,25 @@ const SuccessStep = () => {
             
             <div style={{ background: 'rgba(13, 148, 136, 0.05)', border: '1px solid rgba(13, 148, 136, 0.2)', color: 'var(--primary)', padding: '20px', borderRadius: '16px', margin: '25px auto', maxWidth: '600px', textAlign: 'left', fontSize: '0.95rem', lineHeight: '1.5', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
                 <span style={{ fontWeight: '800', display: 'block', marginBottom: '5px', fontSize: '1rem' }}>Payment Successful</span>
-                We have verified your payment via Cashfree PG. Your appointment is locked in and your virtual room is ready. A confirmation email with the meeting details has been sent to you.
+                We have verified your payment via Cashfree PG. Dr. Reetika Pal will initiate a WhatsApp video call to your phone number at the scheduled time. A confirmation email with the details has been sent to you.
             </div>
 
             <div className={styles.meetSection} style={{ borderStyle: 'solid', borderColor: 'var(--border)', background: '#f8fafc' }}>
-                <p style={{ fontWeight: '700', color: 'var(--primary)', letterSpacing: '0.05em', fontSize: '0.8rem' }}>YOUR CONSULTATION LINK (ACTIVE)</p>
-                <div className={styles.linkBox}>
-                    <code>{currentMeetLink}</code>
+                <p style={{ fontWeight: '700', color: 'var(--primary)', letterSpacing: '0.05em', fontSize: '0.8rem' }}>WHATSAPP CONSULTATION</p>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '10px 0' }}>
+                    <p style={{ fontSize: '0.95rem', margin: 0, color: 'var(--foreground)', fontWeight: '600' }}>
+                        Need to share more details or send a message?
+                    </p>
                     <button 
-                        className={`${styles.joinBtn} ${styles.continueBtn}`}
-                        onClick={() => window.open(currentMeetLink, '_blank')}
-                        style={{ cursor: 'pointer' }}
+                        className={styles.continueBtn}
+                        onClick={() => window.open(waUrl, '_blank')}
+                        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 30px', fontSize: '1rem', width: 'auto' }}
                     >
-                        Join Meet
+                        <MessageCircle size={18} />
+                        Message Doctor on WhatsApp
                     </button>
                 </div>
-                <span className={styles.saveNote} style={{ color: 'var(--muted-foreground)' }}>This meeting link is now active. You can join directly at the scheduled time or access it anytime from your profile.</span>
+                <span className={styles.saveNote} style={{ color: 'var(--muted-foreground)' }}>The doctor will call you directly. You can message the doctor in advance if you want.</span>
             </div>
 
             <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
@@ -813,13 +1016,6 @@ function BookingContent() {
         verifyPayment();
     }, [searchParams, updateBooking]);
 
-    // Auth Guard
-    useEffect(() => {
-        if (!loading && !user) {
-            router.push('/auth/login?redirect=/book');
-        }
-    }, [user, loading, router]);
-
     // Pre-select patient type from query parameter (?type=India or ?type=International)
     useEffect(() => {
         const typeParam = searchParams.get('type');
@@ -830,7 +1026,7 @@ function BookingContent() {
         }
     }, [searchParams, booking.patientType, updateBooking]);
 
-    if (loading || !user || isVerifying) {
+    if (loading || isVerifying) {
         return (
             <div className="page-loader">
                 <LoadingSpinner size={64} />

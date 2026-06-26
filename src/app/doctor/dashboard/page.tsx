@@ -74,6 +74,17 @@ export default function DoctorDashboard() {
     followUpMode: 'Online'
   });
 
+  const getWhatsAppLink = (patientPhone?: string) => {
+    if (!patientPhone) return '#';
+    const cleanPhone = patientPhone.replace(/[\s+-]/g, '');
+    let finalPhone = cleanPhone;
+    if (finalPhone.length === 10) {
+      finalPhone = `91${finalPhone}`;
+    }
+    const message = encodeURIComponent("Hello! I am Dr. Reetika Pal. I am ready for our scheduled dermatology video consultation. Please confirm if I can initiate the WhatsApp video call now.");
+    return `https://wa.me/${finalPhone}?text=${message}`;
+  };
+
 
   useEffect(() => {
     const q = query(collection(db, "appointments"), orderBy("createdAt", "desc"));
@@ -435,10 +446,15 @@ export default function DoctorDashboard() {
                           <>
                             <button 
                               className={`${styles.actionBtn} ${styles.joinBtn}`}
-                              onClick={() => window.open(apt.meetLink.startsWith('http') ? apt.meetLink : `https://${apt.meetLink}`, '_blank')}
-                              title="Join Meeting"
+                              onClick={() => {
+                                const link = getWhatsAppLink(apt.patientPhone);
+                                if (link !== '#') window.open(link, '_blank');
+                                else alert('Patient phone number is not available.');
+                              }}
+                              title="Start Video Call on WhatsApp"
+                              style={{ background: '#25d366', color: 'white', borderColor: '#25d366' }}
                             >
-                              <ExternalLink size={18} />
+                              <MessageCircle size={18} />
                             </button>
                             <button 
                               className={`${styles.actionBtn} ${styles.prescriptionBtn}`}
@@ -517,9 +533,14 @@ export default function DoctorDashboard() {
                       <>
                         <button 
                           className={`${styles.actionBtn} ${styles.joinBtn}`}
-                          onClick={() => window.open(apt.meetLink.startsWith('http') ? apt.meetLink : `https://${apt.meetLink}`, '_blank')}
+                          onClick={() => {
+                            const link = getWhatsAppLink(apt.patientPhone);
+                            if (link !== '#') window.open(link, '_blank');
+                            else alert('Patient phone number is not available.');
+                          }}
+                          style={{ background: '#25d366', color: 'white', borderColor: '#25d366' }}
                         >
-                          <ExternalLink size={18} /> Join
+                          <MessageCircle size={18} /> Call
                         </button>
                         <button 
                           className={`${styles.actionBtn} ${styles.prescriptionBtn}`}
