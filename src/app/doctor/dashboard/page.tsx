@@ -54,7 +54,7 @@ interface Appointment {
 }
 
 export default function DoctorDashboard() {
-  const { user, logout } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,6 +88,9 @@ export default function DoctorDashboard() {
 
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user || user.role !== 'doctor') return;
+
     const q = query(collection(db, "appointments"), orderBy("createdAt", "desc"));
     
     const unsubscribe = onSnapshot(q, async (snapshot) => {
@@ -123,7 +126,7 @@ export default function DoctorDashboard() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user, authLoading]);
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     if (newStatus === 'completed') {
@@ -280,51 +283,44 @@ export default function DoctorDashboard() {
     pendingVerification: appointments.filter(a => a.status === 'pending_verification').length,
   };
 
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
-          <Stethoscope size={48} className="spinner" color="var(--primary)" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={styles.container} style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '20px', background: 'white', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', maxWidth: '450px', width: '90%', textAlign: 'center' }}>
-          <div style={{ background: '#fee2e2', color: '#ef4444', padding: '16px', borderRadius: '50%' }}>
-            <Stethoscope size={36} />
-          </div>
-          <h2 style={{ margin: 0, color: '#1f2937', fontSize: '1.4rem' }}>Connection Error</h2>
-          <p style={{ color: '#6b7280', margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
-            {error}
-          </p>
-          <button 
-            onClick={() => window.location.reload()} 
-            style={{ 
-              background: '#0d9488', 
-              color: 'white', 
-              padding: '12px 24px', 
-              border: 'none', 
-              borderRadius: '8px', 
-              cursor: 'pointer', 
-              fontWeight: '600',
-              transition: 'background-color 0.2s',
-              width: '100%'
-            }}
-          >
-            Retry Connection
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <ProtectedRoute allowedRole="doctor">
-      <div className={styles.container}>
+      {loading ? (
+        <div className={styles.container}>
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
+            <Stethoscope size={48} className="spinner" color="var(--primary)" />
+          </div>
+        </div>
+      ) : error ? (
+        <div className={styles.container} style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '20px', background: 'white', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', maxWidth: '450px', width: '90%', textAlign: 'center' }}>
+            <div style={{ background: '#fee2e2', color: '#ef4444', padding: '16px', borderRadius: '50%' }}>
+              <Stethoscope size={36} />
+            </div>
+            <h2 style={{ margin: 0, color: '#1f2937', fontSize: '1.4rem' }}>Connection Error</h2>
+            <p style={{ color: '#6b7280', margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
+              {error}
+            </p>
+            <button 
+              onClick={() => window.location.reload()} 
+              style={{ 
+                background: '#0d9488', 
+                color: 'white', 
+                padding: '12px 24px', 
+                border: 'none', 
+                borderRadius: '8px', 
+                cursor: 'pointer', 
+                fontWeight: '600',
+                transition: 'background-color 0.2s',
+                width: '100%'
+              }}
+            >
+              Retry Connection
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.container}>
       {/* Photo Expansion Modal */}
       {selectedPhoto && (
         <div className={styles.modal} onClick={() => setSelectedPhoto(null)}>
@@ -851,6 +847,7 @@ export default function DoctorDashboard() {
         />
       )}
       </div>
+      )}
     </ProtectedRoute>
   );
 }
