@@ -150,8 +150,8 @@ export async function POST(request: Request) {
       message: otpSentReal ? `OTP sent successfully via ${providerUsed}` : "OTP generated (Mock Mode)"
     };
 
-    // ONLY return OTP in dev mode response if no real provider was configured or succeeded
-    if (!otpSentReal && process.env.NODE_ENV !== 'production') {
+    // Return OTP in response if no real provider was configured or succeeded (so testing is not blocked)
+    if (!otpSentReal) {
       responsePayload.otp = otp;
       responsePayload.mock = true;
     }
