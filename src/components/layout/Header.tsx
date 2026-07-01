@@ -30,9 +30,6 @@ export default function Header() {
             <li><Link href="/services" onClick={() => setIsMenuOpen(false)}>Services</Link></li>
             <li><Link href="/pricing" onClick={() => setIsMenuOpen(false)}>Pricing</Link></li>
             <li><Link href="/patient-information" onClick={() => setIsMenuOpen(false)}>Patient Information</Link></li>
-            {user?.role !== 'doctor' && (
-              <li><Link href="/book" onClick={() => setIsMenuOpen(false)}>Book Appointment</Link></li>
-            )}
             {/* Chat link removed per user request */}
           </ul>
         </nav>
@@ -43,8 +40,8 @@ export default function Header() {
               <Loader2 className="spinner" size={20} color="var(--primary)" />
             </div>
           ) : !user ? (
-            <Link href="/auth/login" className={styles.ctaBtn} onClick={() => setIsMenuOpen(false)}>
-              Login
+            <Link href="/book" className={styles.ctaBtn} onClick={() => setIsMenuOpen(false)}>
+              Book Appointment
             </Link>
           ) : (
             <div className={styles.userSection}>

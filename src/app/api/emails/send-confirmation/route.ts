@@ -151,14 +151,14 @@ export async function POST(request: Request) {
                 </table>
               </div>
 
-              <h2 class="instruction-header">How to join your consultation:</h2>
-              <p class="instruction-text">At the scheduled time, click the button below to join the Google Meet session. Please ensure your camera and microphone are working correctly.</p>
+              <h2 class="instruction-header">WhatsApp Consultation:</h2>
+              <p class="instruction-text">Dr. Reetika Pal will initiate a WhatsApp video call to your phone number at the scheduled time. You can click the button below to open the WhatsApp chat and send any details or messages in advance.</p>
 
               <center>
-                <a href="${meetLink}" class="cta-button">Join Google Meet</a>
+                <a href="${meetLink}" class="cta-button">Message Doctor on WhatsApp</a>
               </center>
 
-              <p class="link-display">Meeting Link:<br/>${meetLink}</p>
+              <p class="link-display">WhatsApp Link:<br/>${meetLink}</p>
 
               <p class="cancel-note">If you need to reschedule or cancel, please visit your dashboard at least 2 hours before the appointment.</p>
 
@@ -283,13 +283,13 @@ export async function POST(request: Request) {
                   </table>
                 </div>
 
-                <p class="main-text">Click the button below to join the Google Meet session at the scheduled time:</p>
+                <p class="main-text">At the scheduled time, you will initiate a WhatsApp video call to the patient's phone number. Click the button below to open their chat on WhatsApp:</p>
 
                 <center>
-                  <a href="${meetLink}" class="cta-button">Join Google Meet</a>
+                  <a href="${meetLink}" class="cta-button">Open Patient Chat</a>
                 </center>
 
-                <p class="link-display">Meeting Link:<br/>${meetLink}</p>
+                <p class="link-display">WhatsApp Link:<br/>${meetLink}</p>
 
                 <p class="main-text">You can manage this appointment, view patient records, or write an E-prescription on your <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://sarkaridermatologist.com'}/doctor/dashboard" style="color: #0d9488; text-decoration: underline;">Doctor Dashboard</a>.</p>
               </div>

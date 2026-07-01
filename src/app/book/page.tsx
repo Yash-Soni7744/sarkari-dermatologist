@@ -474,7 +474,7 @@ const PatientDetails = () => {
 
         setUploading(true);
         try {
-            const doctorPhone = process.env.NEXT_PUBLIC_DOCTOR_PHONE || '919315227513';
+            const doctorPhone = process.env.NEXT_PUBLIC_DOCTOR_PHONE || '917696888114';
             const meetLink = `https://wa.me/${doctorPhone}`;
 
             const paymentReference = `PAY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -862,7 +862,7 @@ const SuccessStep = () => {
     const { booking } = useBooking();
     const router = useRouter();
 
-    const doctorPhone = process.env.NEXT_PUBLIC_DOCTOR_PHONE || '919315227513';
+    const doctorPhone = process.env.NEXT_PUBLIC_DOCTOR_PHONE || '917696888114';
     const messageText = encodeURIComponent(`Hello Dr. Reetika Pal, I have successfully booked an appointment for ${booking.date} at ${booking.slot}. Looking forward to the consultation.`);
     const waUrl = `https://wa.me/${doctorPhone}?text=${messageText}`;
 

@@ -94,7 +94,7 @@ export default function PricingPage() {
             <ul className={styles.featureList}>
               <li className={styles.featureItem}>
                 <Check className={styles.checkIcon} size={18} />
-                <span><strong>15 mins</strong> Video / Audio Consult (Google Meet)</span>
+                <span><strong>15 mins</strong> Video / Audio Consult (WhatsApp Video Call)</span>
               </li>
               <li className={styles.featureItem}>
                 <Check className={styles.checkIcon} size={18} />
@@ -138,7 +138,7 @@ export default function PricingPage() {
             <ul className={styles.featureList}>
               <li className={styles.featureItem}>
                 <Check className={styles.checkIcon} size={18} />
-                <span><strong>20 mins</strong> Priority Video Consult (Google Meet)</span>
+                <span><strong>20 mins</strong> Priority Video Consult (WhatsApp Video Call)</span>
               </li>
               <li className={styles.featureItem}>
                 <Check className={styles.checkIcon} size={18} />

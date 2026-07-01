@@ -1,103 +1,18 @@
 "use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Mail, Lock, Loader2, Stethoscope } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import { getFriendlyErrorMessage } from '@/lib/utils';
-import styles from './login.module.css';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-    const { login } = useAuth();
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
 
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    });
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            await login(formData.email, formData.password);
-        } catch (err: any) {
-            const firebaseErrorCode = err.code || '';
-            const friendlyMsg = getFriendlyErrorMessage(firebaseErrorCode);
-            setError(friendlyMsg);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    useEffect(() => {
+        router.replace('/book');
+    }, [router]);
 
     return (
-        <div className={styles.container}>
-            <div className={styles.card}>
-                <div className={styles.header}>
-                    <div className={styles.logoIcon}>
-                        <Stethoscope size={32} />
-                    </div>
-                    <h1 className={styles.title}>Patient Login</h1>
-                    <p className={styles.subtitle}>Welcome back! Please enter your details.</p>
-                </div>
-
-                {error && <div className={styles.error}>{error}</div>}
-
-                <form className={styles.form} onSubmit={handleSubmit}>
-                    <div className={styles.inputGroup}>
-                        <label className={styles.label}>Email Address</label>
-                        <div className={styles.inputWrapper}>
-                            <Mail className={styles.inputIcon} size={18} />
-                            <input
-                                name="email"
-                                type="email"
-                                placeholder="name@company.com"
-                                className={styles.input}
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className={styles.inputGroup}>
-                        <label className={styles.label}>Password</label>
-                        <div className={styles.inputWrapper}>
-                            <Lock className={styles.inputIcon} size={18} />
-                            <input
-                                name="password"
-                                type="password"
-                                placeholder="••••••••"
-                                className={styles.input}
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        className={styles.submitBtn}
-                        disabled={isLoading}
-                    >
-                        {isLoading ? <Loader2 className="spinner" size={20} /> : 'Login'}
-                    </button>
-                </form>
-
-                <div className={styles.footer}>
-                    Don't have an account? <Link href="/auth/signup" className={styles.link}>Sign up</Link>
-                </div>
-
-            </div>
+        <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <p style={{ color: 'var(--muted-foreground)' }}>Redirecting to booking page...</p>
         </div>
     );
 }

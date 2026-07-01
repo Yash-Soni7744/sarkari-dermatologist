@@ -19,7 +19,7 @@ export default function ProtectedRoute({ children, allowedRole }: ProtectedRoute
     if (!loading) {
       if (!isAuthenticated) {
         // Not logged in -> Redirect to login
-        const loginPath = allowedRole === 'doctor' ? '/auth/doctor-login' : '/auth/login';
+        const loginPath = allowedRole === 'doctor' ? '/auth/doctor-login' : '/book';
         router.push(loginPath);
       } else if (allowedRole && user?.role !== allowedRole) {
         // Wrong role -> Redirect to their respective dashboard or home
