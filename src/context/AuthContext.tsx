@@ -86,18 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         }
       } else {
-        // Check for hardcoded doctor session in localStorage
-        const storedDoctor = localStorage.getItem('doctor_session');
-        if (storedDoctor) {
-          try {
-            setUser(JSON.parse(storedDoctor));
-          } catch (e) {
-            localStorage.removeItem('doctor_session');
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
+        setUser(null);
       }
       setLoading(false);
     });
@@ -108,23 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      // 1. Hardcoded Doctor Login Check
-      if (email === 'sarkaridermatologist@gmail.com' && password === '12345678') {
-        const doctorUser: User = {
-          id: 'doctor-reitika',
-          name: 'Dr. Reetika Pal',
-          email: 'sarkaridermatologist@gmail.com',
-          role: 'doctor',
-          avatar: 'https://ui-avatars.com/api/?name=Dr+Reetika+Pal&background=0d9488&color=fff'
-        };
-        // Persist doctor session
-        localStorage.setItem('doctor_session', JSON.stringify(doctorUser));
-        setUser(doctorUser);
-        router.push('/doctor/dashboard');
-        return;
-      }
-
-      // 2. Standard Firebase Login
+      // Standard Firebase Login
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
       // Fetch role for redirect

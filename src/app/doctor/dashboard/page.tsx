@@ -58,6 +58,7 @@ export default function DoctorDashboard() {
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending_verification' | 'confirmed' | 'completed'>('all');
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
@@ -113,6 +114,11 @@ export default function DoctorDashboard() {
       }
 
       setAppointments(validApts);
+      setError(null);
+      setLoading(false);
+    }, (err) => {
+      console.error("Firestore snapshot error:", err);
+      setError(err.message || "Failed to load appointments due to insufficient permissions or database error.");
       setLoading(false);
     });
 
@@ -279,6 +285,38 @@ export default function DoctorDashboard() {
       <div className={styles.container}>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
           <Stethoscope size={48} className="spinner" color="var(--primary)" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.container} style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', gap: '20px', background: 'white', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', maxWidth: '450px', width: '90%', textAlign: 'center' }}>
+          <div style={{ background: '#fee2e2', color: '#ef4444', padding: '16px', borderRadius: '50%' }}>
+            <Stethoscope size={36} />
+          </div>
+          <h2 style={{ margin: 0, color: '#1f2937', fontSize: '1.4rem' }}>Connection Error</h2>
+          <p style={{ color: '#6b7280', margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
+            {error}
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{ 
+              background: '#0d9488', 
+              color: 'white', 
+              padding: '12px 24px', 
+              border: 'none', 
+              borderRadius: '8px', 
+              cursor: 'pointer', 
+              fontWeight: '600',
+              transition: 'background-color 0.2s',
+              width: '100%'
+            }}
+          >
+            Retry Connection
+          </button>
         </div>
       </div>
     );
