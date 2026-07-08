@@ -273,6 +273,7 @@ const PatientDetails = () => {
     const [otpPhone, setOtpPhone] = useState('');
     const [otpName, setOtpName] = useState('');
     const [otpCode, setOtpCode] = useState('');
+    const [otpToken, setOtpToken] = useState('');
     const [otpSent, setOtpSent] = useState(false);
     const [sendingOtp, setSendingOtp] = useState(false);
     const [verifyingOtp, setVerifyingOtp] = useState(false);
@@ -310,6 +311,9 @@ const PatientDetails = () => {
             const data = await res.json();
             if (res.ok && data.success) {
                 setOtpSent(true);
+                if (data.token) {
+                    setOtpToken(data.token);
+                }
                 if (data.otp) {
                     setDevOtpHint(`Development mode OTP: ${data.otp}`);
                 }
@@ -334,7 +338,7 @@ const PatientDetails = () => {
             const res = await fetch('/api/auth/otp/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: otpPhone, otp: otpCode }),
+                body: JSON.stringify({ phone: otpPhone, otp: otpCode, token: otpToken }),
             });
             const data = await res.json();
             if (!res.ok || !data.success) {

@@ -1,5 +1,18 @@
 import { NextResponse } from 'next/server';
 import { otpStore } from '@/lib/otpStore';
+import crypto from 'crypto';
+
+const ALGORITHM = 'aes-256-cbc';
+const SECRET_KEY = process.env.CASHFREE_SECRET_KEY || 'sarkari_dermatologist_default_secret_key_123';
+const KEY = crypto.createHash('sha256').update(SECRET_KEY).digest();
+
+function encrypt(text: string): string {
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(ALGORITHM, KEY, iv);
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return `${iv.toString('hex')}:${encrypted}`;
+}
 
 export async function POST(request: Request) {
   try {
@@ -23,6 +36,19 @@ export async function POST(request: Request) {
       expiresAt: expiresAt,
       name: name || ''
     });
+
+    // Generate secure encrypted state token to prevent serverless state loss in production
+    let token = '';
+    try {
+      token = encrypt(JSON.stringify({
+        phone: cleanPhone,
+        otp: otp,
+        expiresAt: expiresAt,
+        name: name || ''
+      }));
+    } catch (tokenErr: any) {
+      console.error('[OTP] Error encrypting token:', tokenErr.message);
+    }
 
     console.log(`[OTP DEBUG] Generated OTP for ${cleanPhone} (${name || 'Guest'}): ${otp}`);
 
@@ -230,7 +256,8 @@ export async function POST(request: Request) {
 
     const responsePayload: any = {
       success: true,
-      message: otpSentReal ? `OTP sent successfully via ${providerUsed}` : "OTP generated (Mock Mode)"
+      message: otpSentReal ? `OTP sent successfully via ${providerUsed}` : "OTP generated (Mock Mode)",
+      token: token
     };
 
     // Return OTP in response if no real provider was configured or succeeded (so testing is not blocked)
