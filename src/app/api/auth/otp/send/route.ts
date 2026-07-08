@@ -29,46 +29,128 @@ export async function POST(request: Request) {
     let otpSentReal = false;
     let providerUsed = '';
 
-    // 1. Check for Fast2SMS (Popular Indian SMS provider)
+    // 1. Check for Fast2SMS (WhatsApp template API)
     const fast2smsKey = process.env.FAST2SMS_API_KEY;
     if (fast2smsKey && fast2smsKey !== 'your_fast2sms_api_key_here') {
       try {
-        // Strip country code if present for Fast2SMS
-        let fast2smsPhone = cleanPhone;
-        if (fast2smsPhone.startsWith('+91')) {
-          fast2smsPhone = fast2smsPhone.substring(3);
-        } else if (fast2smsPhone.startsWith('91') && fast2smsPhone.length === 12) {
-          fast2smsPhone = fast2smsPhone.substring(2);
+        // Prepare phone number for WhatsApp (E.164 with '+' prefix, e.g. +91XXXXXXXXXX)
+        let whatsappPhone = cleanPhone;
+        if (!whatsappPhone.startsWith('+')) {
+          if (whatsappPhone.startsWith('91') && whatsappPhone.length === 12) {
+            whatsappPhone = `+${whatsappPhone}`;
+          } else {
+            whatsappPhone = `+91${whatsappPhone}`;
+          }
         }
 
-        const url = 'https://www.fast2sms.com/dev/bulkV2';
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'authorization': fast2smsKey,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            route: 'otp',
-            variables_values: otp,
-            numbers: fast2smsPhone
-          })
-        });
+        // We also prepare a clean 10-digit number just in case we fallback to standard SMS
+        let smsPhone = cleanPhone;
+        if (smsPhone.startsWith('+91')) {
+          smsPhone = smsPhone.substring(3);
+        } else if (smsPhone.startsWith('91') && smsPhone.length === 12) {
+          smsPhone = smsPhone.substring(2);
+        }
 
-        if (res.ok) {
+        // WhatsApp settings from template details in image
+        const whatsappPhoneNumberId = '118867381768499';
+        const whatsappTemplateName = 'process_initiated_message';
+        const whatsappMessageId = '25040';
+
+        console.log(`[OTP] Attempting to send WhatsApp OTP to ${whatsappPhone} using template ${whatsappTemplateName}...`);
+
+        let success = false;
+        let methodUsed = '';
+
+        // Try Method A: Simple Template API (GET) - Verified working method
+        try {
+          console.log(`[OTP] Sending via Simple WhatsApp GET API...`);
+          // Using senderId parameter instead of phone_number_id as validated by Fast2SMS backend
+          const simpleUrl = `https://www.fast2sms.com/dev/whatsapp?authorization=${encodeURIComponent(fast2smsKey)}&message_id=${whatsappMessageId}&senderId=${whatsappPhoneNumberId}&numbers=${encodeURIComponent(whatsappPhone)}&variables_values=${encodeURIComponent(otp)}`;
+          const simpleRes = await fetch(simpleUrl, {
+            method: 'GET',
+            headers: {
+              'accept': 'application/json'
+            }
+          });
+
+          const simpleData = await simpleRes.json();
+          if (simpleRes.ok && simpleData.return === true) {
+            success = true;
+            methodUsed = 'Fast2SMS WhatsApp (Simple API)';
+            console.log(`[OTP] Sent via Simple API:`, simpleData);
+          } else {
+            console.warn(`[OTP] Simple API failed:`, simpleData);
+          }
+        } catch (simpleErr: any) {
+          console.warn(`[OTP] Simple API error:`, simpleErr.message);
+        }
+
+        // Try Method B: Advanced Meta Format API (POST) - Fallback
+        if (!success) {
+          try {
+            console.log(`[OTP] Retrying via Advanced Meta Format API (POST)...`);
+            const metaUrl = `https://www.fast2sms.com/dev/whatsapp/v24.0/${whatsappPhoneNumberId}/messages`;
+            const metaRes = await fetch(metaUrl, {
+              method: 'POST',
+              headers: {
+                'accept': 'application/json',
+                'content-type': 'application/json',
+                'authorization': fast2smsKey
+              },
+              body: JSON.stringify({
+                messaging_product: 'whatsapp',
+                recipient_type: 'individual',
+                to: whatsappPhone,
+                type: 'template',
+                template: {
+                  name: whatsappTemplateName,
+                  language: {
+                    code: 'en'
+                  },
+                  components: [
+                    {
+                      type: 'body',
+                      parameters: [
+                        {
+                          type: 'text',
+                          text: otp
+                        }
+                      ]
+                    }
+                  ]
+                }
+              })
+            });
+
+            const metaData = await metaRes.json();
+            if (metaRes.ok && (metaData.messages || metaData.success || metaData.return === true)) {
+              success = true;
+              methodUsed = 'Fast2SMS WhatsApp (Meta API)';
+              console.log(`[OTP] Sent via Meta API:`, metaData);
+            } else {
+              console.warn(`[OTP] Meta API call failed:`, metaData);
+            }
+          } catch (metaErr: any) {
+            console.warn(`[OTP] Meta API error:`, metaErr.message);
+          }
+        }
+
+        // Logging error if WhatsApp fails (SMS fallback is disabled)
+        if (!success) {
+          console.error('[OTP] WhatsApp sending failed. SMS fallback is disabled.');
+        }
+
+        if (success) {
           otpSentReal = true;
-          providerUsed = 'Fast2SMS';
-          console.log(`[OTP] Successfully sent OTP via Fast2SMS to ${fast2smsPhone}`);
-        } else {
-          const errText = await res.text();
-          console.error('[OTP] Fast2SMS API failed:', errText);
+          providerUsed = methodUsed;
         }
       } catch (err: any) {
-        console.error('[OTP] Fast2SMS error:', err.message);
+        console.error('[OTP] Fast2SMS error block:', err.message);
       }
     }
 
-    // 2. Check for Twilio SMS (if Fast2SMS was not configured or failed)
+    // 2. Twilio SMS (Disabled as per configuration: OTP must not be sent via SMS)
+    /*
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const twilioFrom = process.env.TWILIO_PHONE_NUMBER;
@@ -109,6 +191,7 @@ export async function POST(request: Request) {
         console.error('[OTP] Twilio error:', err.message);
       }
     }
+    */
 
     // 3. Check for Interakt WhatsApp (if previous failed or not configured)
     const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY;

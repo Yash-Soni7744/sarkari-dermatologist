@@ -6,24 +6,24 @@ import React, { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { BookingProvider, useBooking, PatientType } from '@/context/BookingContext';
-import { 
-  Calendar, 
-  Clock, 
-  User, 
-  CreditCard, 
-  CheckCircle, 
-  ChevronLeft, 
-  ChevronRight,
-  Upload,
-  Loader2,
-  Stethoscope,
-  Globe,
-  IndianRupee,
-  ExternalLink,
-  Copy,
-  X,
-  Smartphone,
-  MessageCircle
+import {
+    Calendar,
+    Clock,
+    User,
+    CreditCard,
+    CheckCircle,
+    ChevronLeft,
+    ChevronRight,
+    Upload,
+    Loader2,
+    Stethoscope,
+    Globe,
+    IndianRupee,
+    ExternalLink,
+    Copy,
+    X,
+    Smartphone,
+    MessageCircle
 } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { db, auth } from '@/lib/firebase';
@@ -103,11 +103,11 @@ const SlotSelection = () => {
         if (!dateStr) return [];
         const selectedDate = new Date(dateStr);
         const now = new Date();
-        
+
         // Ensure comparison is local
-        const isToday = selectedDate.getFullYear() === now.getFullYear() && 
-                        selectedDate.getMonth() === now.getMonth() && 
-                        selectedDate.getDate() === now.getDate();
+        const isToday = selectedDate.getFullYear() === now.getFullYear() &&
+            selectedDate.getMonth() === now.getMonth() &&
+            selectedDate.getDate() === now.getDate();
 
         let available = standardSlots;
 
@@ -117,7 +117,7 @@ const SlotSelection = () => {
                 let [hours, minutes] = time.split(':').map(Number);
                 if (period === 'PM' && hours !== 12) hours += 12;
                 if (period === 'AM' && hours === 12) hours = 0;
-                
+
                 const slotTime = new Date();
                 slotTime.setHours(hours, minutes, 0, 0);
                 return slotTime > now;
@@ -142,7 +142,7 @@ const SlotSelection = () => {
     return (
         <div className={styles.card}>
             <div className={styles.typeSelector}>
-                <button 
+                <button
                     className={`${styles.typeBtn} ${booking.patientType === 'India' ? styles.active : ''}`}
                     onClick={() => updateBooking({ patientType: 'India' })}
                 >
@@ -166,7 +166,7 @@ const SlotSelection = () => {
                         </div>
                     )}
                 </button>
-                <button 
+                <button
                     className={`${styles.typeBtn} ${booking.patientType === 'International' ? styles.active : ''}`}
                     onClick={() => updateBooking({ patientType: 'International' })}
                 >
@@ -206,10 +206,10 @@ const SlotSelection = () => {
                         const dateObj = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), dayNum);
                         const isPast = dateObj < today;
                         const dateStr = formatDateString(currentMonth.getFullYear(), currentMonth.getMonth(), dayNum);
-                        
+
                         return (
-                            <button 
-                                key={dayNum} 
+                            <button
+                                key={dayNum}
                                 className={`${styles.day} ${booking.date === dateStr ? styles.selectedDay : ''}`}
                                 disabled={isPast}
                                 onClick={() => updateBooking({ date: dateStr, slot: '' })}
@@ -231,8 +231,8 @@ const SlotSelection = () => {
                     ) : getAvailableSlots(booking.date).length > 0 ? (
                         <div className={styles.slotsGrid}>
                             {getAvailableSlots(booking.date).map((s: string) => (
-                                <button 
-                                    key={s} 
+                                <button
+                                    key={s}
                                     className={`${styles.slotBtn} ${booking.slot === s ? styles.selectedSlot : ''}`}
                                     onClick={() => updateBooking({ slot: s })}
                                 >
@@ -249,8 +249,8 @@ const SlotSelection = () => {
             )}
 
             <div className={styles.footer}>
-                <button 
-                    className={styles.continueBtn} 
+                <button
+                    className={styles.continueBtn}
                     disabled={!booking.date || !booking.slot}
                     onClick={handleContinue}
                 >
@@ -344,7 +344,7 @@ const PatientDetails = () => {
             }
 
             const { firebaseEmail, firebasePassword, name, phone } = data;
-            
+
             try {
                 // 1. Try signing in
                 await signInWithEmailAndPassword(auth, firebaseEmail, firebasePassword);
@@ -390,7 +390,7 @@ const PatientDetails = () => {
 
         setUploading(true);
         try {
-            const compressImage = (file: File): Promise<{url: string, name: string}> => {
+            const compressImage = (file: File): Promise<{ url: string, name: string }> => {
                 return new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.readAsDataURL(file);
@@ -420,7 +420,7 @@ const PatientDetails = () => {
                             canvas.height = height;
                             const ctx = canvas.getContext('2d');
                             ctx?.drawImage(img, 0, 0, width, height);
-                            
+
                             const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
                             resolve({ url: dataUrl, name: file.name });
                         };
@@ -429,7 +429,7 @@ const PatientDetails = () => {
             };
 
             const compressedPhotos = await Promise.all(files.map(compressImage));
-            
+
             const totalSize = [...booking.details.photos, ...compressedPhotos].reduce((acc, p) => acc + p.url.length, 0);
             const MAX_FIRESTORE_PAYLOAD = 800000;
 
@@ -464,7 +464,7 @@ const PatientDetails = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (booking.appointmentId) {
             nextStep();
             return;
@@ -497,10 +497,10 @@ const PatientDetails = () => {
                 createdAt: serverTimestamp()
             });
 
-            updateBooking({ 
+            updateBooking({
                 appointmentId: aptRef.id,
                 paymentReference: paymentReference,
-                details: { ...booking.details, meetLink } 
+                details: { ...booking.details, meetLink }
             });
 
             nextStep();
@@ -522,9 +522,9 @@ const PatientDetails = () => {
                 <div className={styles.form}>
                     <div className={styles.inputGroup}>
                         <label>Full Name</label>
-                        <input 
-                            type="text" 
-                            required 
+                        <input
+                            type="text"
+                            required
                             placeholder="Enter your full name"
                             value={otpName}
                             disabled={otpSent || sendingOtp || verifyingOtp}
@@ -532,10 +532,10 @@ const PatientDetails = () => {
                         />
                     </div>
                     <div className={styles.inputGroup}>
-                        <label>Phone Number</label>
-                        <input 
-                            type="tel" 
-                            required 
+                        <label>WhatsApp Phone Number</label>
+                        <input
+                            type="tel"
+                            required
                             placeholder="e.g. +919876543210"
                             value={otpPhone}
                             disabled={otpSent || sendingOtp || verifyingOtp}
@@ -546,9 +546,9 @@ const PatientDetails = () => {
                     {otpSent && (
                         <div className={styles.inputGroup} style={{ marginTop: '1rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <label>Enter 6-digit OTP Code</label>
-                                <button 
-                                    type="button" 
+                                <label>Enter 6-digit OTP Code Sent on Whatsapp</label>
+                                <button
+                                    type="button"
                                     className={styles.backBtn}
                                     style={{ border: 'none', background: 'transparent', padding: 0, fontSize: '0.85rem', textDecoration: 'underline', color: 'var(--primary)', cursor: 'pointer' }}
                                     onClick={() => { setOtpSent(false); setOtpCode(''); }}
@@ -557,10 +557,10 @@ const PatientDetails = () => {
                                     Change Number
                                 </button>
                             </div>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 maxLength={6}
-                                required 
+                                required
                                 placeholder="Enter 6-digit OTP"
                                 value={otpCode}
                                 disabled={verifyingOtp}
@@ -586,9 +586,9 @@ const PatientDetails = () => {
                             Back
                         </button>
                         {!otpSent ? (
-                            <button 
-                                type="button" 
-                                className={styles.continueBtn} 
+                            <button
+                                type="button"
+                                className={styles.continueBtn}
                                 onClick={handleSendOtp}
                                 disabled={sendingOtp || !otpName || !otpPhone}
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
@@ -606,9 +606,9 @@ const PatientDetails = () => {
                                 )}
                             </button>
                         ) : (
-                            <button 
-                                type="button" 
-                                className={styles.continueBtn} 
+                            <button
+                                type="button"
+                                className={styles.continueBtn}
                                 onClick={handleVerifyOtp}
                                 disabled={verifyingOtp || otpCode.length < 6}
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
@@ -635,34 +635,34 @@ const PatientDetails = () => {
             <form onSubmit={handleSubmit} className={styles.form}>
                 <div className={styles.inputGroup}>
                     <label>Full Name</label>
-                    <input 
-                        type="text" 
-                        required 
+                    <input
+                        type="text"
+                        required
                         value={booking.details.name}
                         onChange={e => updateBooking({ details: { ...booking.details, name: e.target.value } })}
                     />
                 </div>
                 <div className={styles.inputGroup}>
-                    <label>Phone Number</label>
-                    <input 
-                        type="tel" 
-                        required 
+                    <label>WhatsApp Phone Number</label>
+                    <input
+                        type="tel"
+                        required
                         value={booking.details.phone}
                         onChange={e => updateBooking({ details: { ...booking.details, phone: e.target.value } })}
                     />
                 </div>
                 <div className={styles.inputGroup}>
                     <label>Email Address</label>
-                    <input 
-                        type="email" 
-                        required 
+                    <input
+                        type="email"
+                        required
                         value={booking.details.email}
                         onChange={e => updateBooking({ details: { ...booking.details, email: e.target.value } })}
                     />
                 </div>
                 <div className={styles.inputGroup}>
                     <label>Describe your concern (Optional)</label>
-                    <textarea 
+                    <textarea
                         rows={3}
                         value={booking.details.concern}
                         onChange={e => updateBooking({ details: { ...booking.details, concern: e.target.value } })}
@@ -673,11 +673,11 @@ const PatientDetails = () => {
                 <div className={styles.fileUpload}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                         <label className={styles.uploadBox} style={{ cursor: 'pointer', flex: 1, marginRight: booking.details.photos.length > 0 ? '10px' : '0' }}>
-                            <input 
-                                type="file" 
-                                hidden 
+                            <input
+                                type="file"
+                                hidden
                                 multiple
-                                accept="image/*" 
+                                accept="image/*"
                                 onChange={handleFileUpload}
                                 disabled={uploading}
                             />
@@ -686,8 +686,8 @@ const PatientDetails = () => {
                             <span>JPG, PNG (Auto-compressed)</span>
                         </label>
                         {booking.details.photos.length > 0 && (
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 onClick={clearPhotos}
                                 className={styles.clearBtn}
                                 style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #ef4444', color: '#ef4444', background: 'white', cursor: 'pointer', fontWeight: 'bold' }}
@@ -779,9 +779,9 @@ const PaymentStep = () => {
             // Initialize Cashfree SDK and trigger checkout
             const env = process.env.NEXT_PUBLIC_CASHFREE_ENV || 'TEST';
             const mode = env === 'PROD' || env === 'PRODUCTION' ? 'production' : 'sandbox';
-            
+
             const cashfree = (window as any).Cashfree({ mode });
-            
+
             cashfree.checkout({
                 paymentSessionId: data.payment_session_id,
                 redirectTarget: '_self'
@@ -802,7 +802,7 @@ const PaymentStep = () => {
                     <p style={{ color: 'var(--muted-foreground)', marginBottom: '20px' }}>
                         Pay securely using UPI, Card, Netbanking or Wallet.
                     </p>
-                    
+
                     <div className={`${styles.dateTime} ${styles.amountBadge}`} style={{ margin: '0 auto 24px', fontSize: '1.8rem', padding: '12px 30px' }}>
                         {booking.patientType === 'India' ? <IndianRupee size={28} style={{ marginRight: '6px' }} /> : '$'}
                         {booking.patientType === 'India' ? booking.amount : '40'}
@@ -824,9 +824,9 @@ const PaymentStep = () => {
                     </div>
                 </div>
 
-                <button 
-                    onClick={handleCashfreePayment} 
-                    className={styles.continueBtn} 
+                <button
+                    onClick={handleCashfreePayment}
+                    className={styles.continueBtn}
                     disabled={loadingSession}
                     style={{ width: '100%', maxWidth: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', height: '50px' }}
                 >
@@ -842,10 +842,10 @@ const PaymentStep = () => {
                         </>
                     )}
                 </button>
-                
-                <button 
-                    onClick={prevStep} 
-                    className={styles.backBtn} 
+
+                <button
+                    onClick={prevStep}
+                    className={styles.backBtn}
                     disabled={loadingSession}
                     style={{ marginTop: '15px', alignSelf: 'center', border: 'none', background: 'transparent', color: 'var(--muted-foreground)', fontWeight: '600', cursor: 'pointer' }}
                 >
@@ -881,7 +881,7 @@ const SuccessStep = () => {
                 <Calendar size={20} style={{ marginRight: '10px' }} />
                 {booking.date} at {booking.slot}
             </div>
-            
+
             <div style={{ background: 'rgba(13, 148, 136, 0.05)', border: '1px solid rgba(13, 148, 136, 0.2)', color: 'var(--primary)', padding: '20px', borderRadius: '16px', margin: '25px auto', maxWidth: '600px', textAlign: 'left', fontSize: '0.95rem', lineHeight: '1.5', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
                 <span style={{ fontWeight: '800', display: 'block', marginBottom: '5px', fontSize: '1rem' }}>Payment Successful</span>
                 We have verified your payment via Cashfree PG. Dr. Reetika Pal will initiate a WhatsApp video call to your phone number at the scheduled time. A confirmation email with the details has been sent to you.
@@ -893,7 +893,7 @@ const SuccessStep = () => {
                     <p style={{ fontSize: '0.95rem', margin: 0, color: 'var(--foreground)', fontWeight: '600' }}>
                         Need to share more details or send a message?
                     </p>
-                    <button 
+                    <button
                         className={styles.continueBtn}
                         onClick={() => window.open(waUrl, '_blank')}
                         style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 30px', fontSize: '1rem', width: 'auto' }}
@@ -930,7 +930,7 @@ function BookingContent() {
         const verifyPayment = async () => {
             const orderId = searchParams.get('order_id');
             const appointmentId = searchParams.get('appointment_id');
-            
+
             if (orderId && appointmentId && !isVerifyingInProgress.current) {
                 isVerifyingInProgress.current = true;
                 setIsVerifying(true);
@@ -949,10 +949,10 @@ function BookingContent() {
                         // Securely read from Firestore to fetch slot & client details on redirect return
                         const aptRef = doc(db, 'appointments', appointmentId);
                         const aptSnap = await getDoc(aptRef);
-                        
+
                         if (aptSnap.exists()) {
                             const appointmentData = aptSnap.data();
-                            
+
                             // 1. Perform database update client-side where authentication permissions allow it
                             if (appointmentData.status !== 'confirmed') {
                                 await updateDoc(aptRef, {
@@ -961,7 +961,7 @@ function BookingContent() {
                                     verificationStatus: 'verified',
                                     cfOrderId: orderId
                                 });
-                                
+
                                 // 2. Trigger confirmation email
                                 try {
                                     await fetch('/api/emails/send-confirmation', {
@@ -981,7 +981,7 @@ function BookingContent() {
                                     console.error('Failed to trigger confirmation email on redirect:', emailErr);
                                 }
                             }
-                            
+
                             // 3. Update React context to show step 4 (Success) with data filled out
                             updateBooking({
                                 step: 4,
@@ -1046,12 +1046,12 @@ function BookingContent() {
                     </div>
                     <h2 style={{ color: '#ef4444' }}>Payment Failed</h2>
                     <p style={{ marginBottom: '1.5rem' }}>{verificationError}</p>
-                    <button 
+                    <button
                         onClick={() => {
                             setVerificationError(null);
                             resetBooking();
                             router.replace('/book');
-                        }} 
+                        }}
                         className={styles.continueBtn}
                     >
                         Book Again
