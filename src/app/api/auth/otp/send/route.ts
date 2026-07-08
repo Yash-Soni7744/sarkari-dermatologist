@@ -21,8 +21,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Phone number is required' }, { status: 400 });
     }
 
-    // Clean phone number (remove spaces, etc)
-    const cleanPhone = phone.replace(/\s+/g, '');
+    // Clean phone number (remove spaces, dashes, parentheses)
+    const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+
+    // Validate phone number format
+    let isValid = false;
+    if (cleanPhone.startsWith('+')) {
+      isValid = /^\+[1-9]\d{6,14}$/.test(cleanPhone);
+    } else {
+      isValid = /^\d{10}$/.test(cleanPhone) || /^91\d{10}$/.test(cleanPhone);
+    }
+
+    if (!isValid) {
+      return NextResponse.json({ success: false, error: 'Invalid phone number format. Please enter a valid 10-digit number or use standard country code prefix.' }, { status: 400 });
+    }
 
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();

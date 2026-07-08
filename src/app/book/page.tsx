@@ -299,6 +299,24 @@ const PatientDetails = () => {
             setOtpError('Name and Phone number are required.');
             return;
         }
+        
+        // Clean phone number of spaces, dashes, parentheses
+        const clean = otpPhone.replace(/[\s\-\(\)]/g, '');
+        
+        let isValid = false;
+        if (clean.startsWith('+')) {
+            // E.164 format: + followed by 7 to 15 digits
+            isValid = /^\+[1-9]\d{6,14}$/.test(clean);
+        } else {
+            // Must be a 10-digit number or 12-digit number starting with 91
+            isValid = /^\d{10}$/.test(clean) || /^91\d{10}$/.test(clean);
+        }
+
+        if (!isValid) {
+            setOtpError('Please enter a valid phone number (e.g. 10-digit number or starting with country code like +91...).');
+            return;
+        }
+
         setSendingOtp(true);
         setOtpError(null);
         setDevOtpHint(null);
